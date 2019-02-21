@@ -513,3 +513,4 @@ class OLDA:
             for v in range(V):
                 doc_word[d, v] = np.count_nonzero(WS[DS == d] == v)
         return doc_word
+

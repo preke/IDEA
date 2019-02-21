@@ -514,13 +514,17 @@ def rank_topic_label(count, total_count, phi, label_ids, mu=0.2):
     c_phi = phi * (1 + mu_div) - np.sum(phi, 0) * mu_div
     # construct label count matrix
     c_label_m = np.empty((len(label_ids), len(phi[0])), dtype=float)
+
     for ind, label_id in enumerate(label_ids):
         for w_id in range(len(phi[0])):
             c_label_m[ind, w_id] = count.get((label_id, w_id)) * total_count / float((count.get(w_id) + 1) * (count.get(label_id) + 1)) if (label_id, w_id) in count else 1.0
+    
     c_label_m = np.log(c_label_m)
     # compute score matrix
     topic_label_scores = np.dot(c_phi, np.transpose(c_label_m))
     return topic_label_scores
+
+
 
 def topic_detect(rawinput_sents, dic, phi, last_phi, count, last_count, total_count, last_total_count, label_ids, sent_ids, sensi_label, sensi_sent, jsds, theta, mu, lam):
     # matrix implementation for speed-up
@@ -783,5 +787,10 @@ if __name__ == '__main__':
     start_t = time.time()
     apk_phis = OLDA_fit(OLDA_input, topic_num, win_size)
     phrases = generate_labeling_candidates(OLDA_input)
+    print phrases
     topic_labeling(OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)
     print("Totally takes %.2f seconds" % (time.time() - start_t))
+
+
+
+
