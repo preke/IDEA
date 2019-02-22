@@ -251,7 +251,7 @@ def OLDA_fit(OLDA_input, n_topics, win_size):
         for t_i, phi in enumerate(phis[apk]):
             fout.write("time slice %s\n"%t_i)
             for i, topic_dist in enumerate(phi):
-                topic_words = [(dictionary[w_id], topic_dist[w_id]) for w_id in np.argsort(topic_dist)[:-10:-1]]
+                topic_words = [str((dictionary[w_id], topic_dist[w_id])) for w_id in np.argsort(topic_dist)[:-10:-1]]
                 fout.write('Topic {}: {}\n'.format(i, ' '.join(topic_words)))
             fout.write('\n')
         fout.close()
