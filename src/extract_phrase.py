@@ -3,6 +3,7 @@ from gensim.models.phrases import Phrases
 import os
 import itertools
 from extractSentenceWords import *
+from gensim.models import Word2Vec
 
 logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s', level=logging.INFO)
 
@@ -34,9 +35,12 @@ def extract_phrases(app_files, bigram_min, trigram_min):
 
     rst = build_input(app_files)
     gen = list(itertools.chain.from_iterable(rst))  # flatten
-    print gen
+    
     bigram = Phrases(gen, threshold=5, min_count=bigram_min)
     trigram = Phrases(bigram[gen], threshold=3, min_count=trigram_min)
+
+    w2v_model = Word2Vec(trigram[bigram[gen]], min_count=1)
     # write
     bigram.save(bigram_fp)
     trigram.save(trigram_fp)
+    return w2v_model

@@ -776,8 +776,12 @@ def save_phrase(review_path, bigram_num, trigram):
     for apk, app in app_files:
         extract_phrases(app)
 
+
+def attention(w2v_model, phrases, topic_word_prob):
+    pass
+
 if __name__ == '__main__':
-    extract_phrases(app_files, bigram_min, trigram_min)
+    w2v_model = extract_phrases(app_files, bigram_min, trigram_min)
     # load_phrase()
 
     # timed_reviews = extract_review()
