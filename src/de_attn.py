@@ -32,6 +32,26 @@ class Decomposable_Attention(nn.Module):
         mlp_layers.append(nn.ReLU())   
         return nn.Sequential(*mlp_layers)   # * used to unpack list
 
+    
+    def forward(self, sent1, sent2):
+        '''
+        比如说attention matrix的表格里，
+        e_{ij}是topic里每个word对应的embedding与candidates里word的embedding的cosine similarity，
+        t_j可以认为是当前topic-word的probability，
+        beta_i得到的是每个candidate在所有topic words上的匹配的score
+        '''
+        sent1_embed = self.embed(sent1)
+        sent2_embed = self.embed(sent2)
+        
+        '''Attend'''
+        len1 = sent1_embed.size(1)
+        len2 = sent2_embed.size(1)
+
+        f1 = f1.view(-1, len1, self.embed_dim)
+        f2 = f2.view(-1, len2, self.embed_dim)
+        score1 = torch.bmm(f1, torch.transpose(f2, 1, 2))
+        
+
     def forward(self, batched_data):
         sent1_linear = torch.tensor(batched_data[1]).to(self.device)
         sent2_linear = torch.tensor(batched_data[2]).to(self.device)
@@ -39,8 +59,7 @@ class Decomposable_Attention(nn.Module):
         sent2_linear_embedding = self.embed(sent2_linear)
         len1 = sent1_linear_embedding.size(1)
         len2 = sent2_linear_embedding.size(1)
-        
-        
+
         '''Attend'''
         f1 = self.mlp_f(sent1_linear_embedding.view(-1, self.embed_dim))
         f2 = self.mlp_f(sent2_linear_embedding.view(-1, self.embed_dim))

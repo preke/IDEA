@@ -251,7 +251,7 @@ def OLDA_fit(OLDA_input, n_topics, win_size):
         for t_i, phi in enumerate(phis[apk]):
             fout.write("time slice %s\n"%t_i)
             for i, topic_dist in enumerate(phi):
-                topic_words = [dictionary[w_id] for w_id in np.argsort(topic_dist)[:-10:-1]]
+                topic_words = [(dictionary[w_id], topic_dist[w_id]) for w_id in np.argsort(topic_dist)[:-10:-1]]
                 fout.write('Topic {}: {}\n'.format(i, ' '.join(topic_words)))
             fout.write('\n')
         fout.close()
@@ -377,7 +377,6 @@ def topic_labeling(OLDA_input, apk_phis, phrases, mu, lam, theta, save=True):
         dictionary, _, rawinput, rates, tag = item
         phis = apk_phis[apk]
         labels = phrases[apk].keys()
-        print labels
         # label_ids = map(dictionary.token2id.get, labels)
         label_ids = get_candidate_label_ids(dictionary, labels, rawinput)
         count = count_occurence(dictionary, rawinput, label_ids)
