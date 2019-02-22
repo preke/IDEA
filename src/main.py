@@ -778,19 +778,19 @@ def save_phrase(review_path, bigram_num, trigram):
 
 if __name__ == '__main__':
     extract_phrases(app_files, bigram_min, trigram_min)
-    load_phrase()
+    # load_phrase()
 
-    timed_reviews = extract_review()
+    # timed_reviews = extract_review()
 
-    OLDA_input = build_AOLDA_input_version(timed_reviews)
-    start_t = time.time()
-    apk_phis = OLDA_fit(OLDA_input, topic_num, win_size)
-    print apk_phis
-    phrases = generate_labeling_candidates(OLDA_input)
-    # { 'youtube':{'phrase':1} }
+    # OLDA_input = build_AOLDA_input_version(timed_reviews)
+    # start_t = time.time()
+    # apk_phis = OLDA_fit(OLDA_input, topic_num, win_size)
+    # print apk_phis
+    # phrases = generate_labeling_candidates(OLDA_input)
+    # # { 'youtube':{'phrase':1} }
     
-    topic_labeling(OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)
-    print("Totally takes %.2f seconds" % (time.time() - start_t))
+    # topic_labeling(OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)
+    # print("Totally takes %.2f seconds" % (time.time() - start_t))
 
 
 
