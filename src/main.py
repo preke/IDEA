@@ -377,6 +377,7 @@ def topic_labeling(OLDA_input, apk_phis, phrases, mu, lam, theta, save=True):
         dictionary, _, rawinput, rates, tag = item
         phis = apk_phis[apk]
         labels = phrases[apk].keys()
+        print labels
         # label_ids = map(dictionary.token2id.get, labels)
         label_ids = get_candidate_label_ids(dictionary, labels, rawinput)
         count = count_occurence(dictionary, rawinput, label_ids)
@@ -402,7 +403,6 @@ def topic_labeling(OLDA_input, apk_phis, phrases, mu, lam, theta, save=True):
             logging.info("labeling topic at %s slice of %s" % (t_i, apk))
             topic_label_scores = topic_labeling_(count[t_i], total_count[t_i], label_ids[t_i], sensi_label[t_i], phi, mu, lam)
             topic_label_sent_score = topic_label_sent(dictionary, phi, rawinput_sent, sent_ids[t_i], sensi_sent[t_i], mu, lam)
-
             # write to file: topic phrase
             if save:
                 fout_labels.write("time slice %s, tag: %s\n"%(t_i, tag[t_i]))
