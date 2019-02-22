@@ -5,6 +5,10 @@ import torch.nn.functional as F
 from math import sqrt
 import numpy as np
 
+
+
+
+
 class Decomposable_Attention(nn.Module):
     def __init__(self, vocab_size, device, word_matrix=None, embed_dim=300):
         super(Decomposable_Attention, self).__init__()
@@ -17,40 +21,16 @@ class Decomposable_Attention(nn.Module):
             word_matrix = torch.tensor(word_matrix).to(self.device)
             self.word_embedding.weight.data.copy_(word_matrix)
             self.word_embedding.weight.requires_grad = False
-
-        self.mlp_f = self.mlp_layers(self.embed_dim, self.embed_dim)
-        self.mlp_g = self.mlp_layers(2 * self.embed_dim, self.embed_dim)
-        self.mlp_h = self.mlp_layers(2 * self.embed_dim, self.embed_dim)
-        self.final_linear_1 = self.mlp_layers(self.embed_dim, self.embed_dim)
-        self.final_linear_2 = self.mlp_layers(self.embed_dim, self.embed_dim)
-        self.final_linear_3 = self.mlp_layers(self.embed_dim, 1)        
-
-    def mlp_layers(self, input_dim, output_dim):
-        mlp_layers = []
-        mlp_layers.append(nn.Dropout(p=0.2))
-        mlp_layers.append(nn.Linear(input_dim, output_dim, bias=True))
-        mlp_layers.append(nn.ReLU())   
-        return nn.Sequential(*mlp_layers)   # * used to unpack list
-
     
-    def forward(self, sent1, sent2):
-        '''
-        比如说attention matrix的表格里，
-        e_{ij}是topic里每个word对应的embedding与candidates里word的embedding的cosine similarity，
-        t_j可以认为是当前topic-word的probability，
-        beta_i得到的是每个candidate在所有topic words上的匹配的score
-        '''
-        sent1_embed = self.embed(sent1)
-        sent2_embed = self.embed(sent2)
-        
-        '''Attend'''
-        len1 = sent1_embed.size(1)
-        len2 = sent2_embed.size(1)
+    def forward(self, phrases, topic_word_prob):
 
-        f1 = f1.view(-1, len1, self.embed_dim)
-        f2 = f2.view(-1, len2, self.embed_dim)
-        score1 = torch.bmm(f1, torch.transpose(f2, 1, 2))
-        
+        phrases_embed = self.embed(phrases)
+        topic_word_prob_embed = [self.embed(word_prob[0]) for word_prob in topic_word_prob]
+        print phrases.shape
+        print topic_word_prob.shape
+
+        # attention matrix by cosine similarity
+                
 
     def forward(self, batched_data):
         sent1_linear = torch.tensor(batched_data[1]).to(self.device)
