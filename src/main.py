@@ -253,7 +253,7 @@ def OLDA_fit(OLDA_input, n_topics, win_size):
             fout.write("time slice %s\n"%t_i)
             topic_dict[t_i] = {}
             for i, topic_dist in enumerate(phi):
-                topic_words = [str((dictionary[w_id], topic_dist[w_id])) for w_id in np.argsort(topic_dist)[:-10:-1]]
+                topic_words = [(dictionary[w_id], topic_dist[w_id]) for w_id in np.argsort(topic_dist)[:-10:-1]]
                 fout.write('Topic {}: {}\n'.format(i, ' '.join(topic_words)))
                 topic_dict[t_i][i] = topic_words
             fout.write('\n')
@@ -780,7 +780,32 @@ def save_phrase(review_path, bigram_num, trigram):
         extract_phrases(app)
 
 
-def attention(w2v_model, phrases, topic_word_prob):
+import scipy.spatial.distance.cosine
+import scipy.special.softmax
+
+candidate_phrase_list = phrases['youtube'].keys()
+topic_dict_1_slide = topic_dict[0]
+
+def attention(w2v_model, candidate_phrase_list, topic_dict_1_slide):
+    for topic, topic_words in topic_dict_1_slide.iteritems():
+        phrase_score = []
+        for phrase in candidate_phrase_list:
+            embed1 = w2v_model[phrase]
+            tmp_list = []
+            probs = []
+            for word_prob in topic_words:
+                embed2 = w2v_model[word_prob[0]]
+                tmp_list.append(cosine(embed1, embed2))
+                probs.append(word_prob[1])
+            
+            weights = softmax(np.array(tmp_list))
+            probs = np.array(probs)
+            attn_score = np.dot(weights, probs)
+            phrase_score.append((phrase, attn_score))
+
+        print phrase_score
+        break
+        
     pass
 
 if __name__ == '__main__':
