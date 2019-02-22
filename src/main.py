@@ -254,7 +254,7 @@ def OLDA_fit(OLDA_input, n_topics, win_size):
             topic_dict[t_i] = {}
             for i, topic_dist in enumerate(phi):
                 topic_words = [(dictionary[w_id], topic_dist[w_id]) for w_id in np.argsort(topic_dist)[:-10:-1]]
-                fout.write('Topic {}: {}\n'.format(i, ' '.join(topic_words)))
+                fout.write('Topic {}: {}\n'.format(i, ' '.join([i[0] for i in topic_words])))
                 topic_dict[t_i][i] = topic_words
             fout.write('\n')
         fout.close()
