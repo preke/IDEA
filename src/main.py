@@ -241,6 +241,7 @@ def generate_labeling_candidates(OLDA_input):
 def OLDA_fit(OLDA_input, n_topics, win_size):
     phis = {}
     theta = {}
+    topic_dict = {}
     for apk, item in OLDA_input.items():
         dictionary, input_X, _, _1, _2 = item
         olda_model = OLDA(n_topics=n_topics, n_iter=1000, refresh=500, window_size=win_size)
@@ -250,12 +251,14 @@ def OLDA_fit(OLDA_input, n_topics, win_size):
         fout = open("../result/topic_words_%s_%s_%s"%(apk, n_topics, win_size), 'w')
         for t_i, phi in enumerate(phis[apk]):
             fout.write("time slice %s\n"%t_i)
+            topic_dict[t_i] = {}
             for i, topic_dist in enumerate(phi):
                 topic_words = [str((dictionary[w_id], topic_dist[w_id])) for w_id in np.argsort(topic_dist)[:-10:-1]]
                 fout.write('Topic {}: {}\n'.format(i, ' '.join(topic_words)))
+                topic_dict[t_i][i] = topic_words
             fout.write('\n')
         fout.close()
-    return phis
+    return phis, topic_dict
 
 def count_occurence(dic, rawinput, label_ids):
     count = []
@@ -787,7 +790,7 @@ if __name__ == '__main__':
 
     OLDA_input = build_AOLDA_input_version(timed_reviews)
     start_t = time.time()
-    apk_phis = OLDA_fit(OLDA_input, topic_num, win_size)
+    apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
     print apk_phis
     phrases = generate_labeling_candidates(OLDA_input)
     # { 'youtube':{'phrase':1} }
