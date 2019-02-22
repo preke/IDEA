@@ -33,8 +33,8 @@ def extract_phrases(app_files, bigram_min, trigram_min):
     trigram_fp = os.path.join("..", "model", "trigram.model")
 
     rst = build_input(app_files)
-    print rst
     gen = list(itertools.chain.from_iterable(rst))  # flatten
+    print gen
     bigram = Phrases(gen, threshold=5, min_count=bigram_min)
     trigram = Phrases(bigram[gen], threshold=3, min_count=trigram_min)
     # write
