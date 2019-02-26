@@ -411,8 +411,15 @@ def topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, thet
                 fout_labels.write("time slice %s, tag: %s\n"%(t_i, tag[t_i]))
                 for tp_i, label_scores in enumerate(topic_label_scores):
                     fout_labels.write("Topic %d:"%tp_i)
-                    for w_id in np.argsort(label_scores)[:-candidate_num-1:-1]:
-                        fout_labels.write("%s\t%f\t" % (dictionary[label_ids[t_i][w_id]], label_scores[w_id]))
+                    
+                    tuple_list = []
+                    for w_id in np.argsort(label_scores):
+                        tuple_list.append((dictionary[label_ids[t_i][w_id]], 
+                            float(label_scores[w_id]) + float(total_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])))
+                    
+                    tuple_list = sorted(tuple_list, key=lambda x : x[1], reverse=True)
+                    for tup in tuple_list[:candidate_num]:                    
+                        fout_labels.write("%s\t%f\t" % (tup[0], tup[1]))
                     fout_labels.write('\n')
 
                 fout_sents.write("time slice %s, tag: %s\n" % (t_i, tag[t_i]))
