@@ -829,7 +829,7 @@ if __name__ == '__main__':
     OLDA_input = build_AOLDA_input_version(timed_reviews)
     start_t = time.time()
     apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
-    print apk_phis
+    # print apk_phis
     phrases = generate_labeling_candidates(OLDA_input)
     # { 'youtube':{'phrase':1} }
     
