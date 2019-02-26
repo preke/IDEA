@@ -24,6 +24,7 @@ from extractSentenceWords import *
 from onlineLDA import *
 from config import Config
 from extract_phrase import extract_phrases
+from scipy import spatial, special
 
 bigram = None; trigram = None; wv_model = None
 my_stoplst = ["app", "good", "excellent", "awesome", "please", "they", "very", "too", "like", "love", "nice", "yeah",
@@ -362,7 +363,7 @@ def sim_topic_word(phi, label_id, count):
     c_l = np.array([np.log((count[label_id, w_id] + 1) / float((count[w_id] + 1) * (count[label_id] + 1))) for w_id in range(len(phi))])
     return np.dot(phi, c_l)
 
-def topic_labeling(OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, ):
+def topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, ):
     """
     Topic labeling for phrase and sentence
     :param OLDA_input:
@@ -780,25 +781,17 @@ def save_phrase(review_path, bigram_num, trigram):
         extract_phrases(app)
 
 
-import scipy
-from scipy import spatial, special
-
 def softmax(x):
     return np.exp(x)/np.sum(np.exp(x),axis=0)
 
 
 def attention(w2v_model, candidate_phrase_list, topic_dict):
-    attention_dict={}
-    '''
-    attention_dict = {
-        t_slide : {
-            topic : [phrase, attn_score]
-        }
-    }
-    '''
-    for t_slide, topic_dict_1_slide in topic_dict.iteritems():
+    total_attn_dict = {}
+    for t_slide, topic_dict_1_slide in topic_dict.iteritems():        
+        # for each time slide
+        oov_embed = np.random.randn(1, 100)
         for topic, topic_words in topic_dict_1_slide.iteritems():
-            phrase_score = []
+            phrase_score = {}
             for phrase in candidate_phrase_list:
                 embed1 = w2v_model[phrase]
                 tmp_list = []
@@ -807,18 +800,18 @@ def attention(w2v_model, candidate_phrase_list, topic_dict):
                     try:
                         embed2 = w2v_model[word_prob[0]]
                     except: #oov
-                        embed2 = np.random.randn(1, 100)
-                        print word_prob[0]
+                        embed2 = oov_embed
                     tmp_list.append(1.0 - spatial.distance.cosine(embed1, embed2))
                     probs.append(float(str(word_prob[1])))
                 weights = softmax(np.array(tmp_list))
                 probs = np.array(probs)
                 attn_score = np.dot(weights, probs)
-                phrase_score.append((phrase, attn_score))
+                phrase_score[phrase] = attn_score
 
-        # print phrase_score
-
-        # break
+            topic_dict_1_slide[topic] = phrase_score
+        total_attn_dict[t_slide] = topic_dict_1_slide
+    
+    return total_attn_dict
         
 
 if __name__ == '__main__':
@@ -834,8 +827,8 @@ if __name__ == '__main__':
     # { 'youtube':{'phrase':1} }
     
     candidate_phrase_list = phrases['youtube'].keys()
-    attention(w2v_model, candidate_phrase_list, topic_dict)
-    topic_labeling(OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)
+    total_attn_dict = attention(w2v_model, candidate_phrase_list, topic_dict)
+    topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)
     print("Totally takes %.2f seconds" % (time.time() - start_t))
 
 
