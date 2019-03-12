@@ -363,7 +363,7 @@ def sim_topic_word(phi, label_id, count):
     c_l = np.array([np.log((count[label_id, w_id] + 1) / float((count[w_id] + 1) * (count[label_id] + 1))) for w_id in range(len(phi))])
     return np.dot(phi, c_l)
 
-def topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, ):
+def topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, add_attn=True):
     """
     Topic labeling for phrase and sentence
     :param OLDA_input:
@@ -414,9 +414,13 @@ def topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, thet
                     
                     tuple_list = []
                     for w_id in np.argsort(label_scores):
-                        tuple_list.append((dictionary[label_ids[t_i][w_id]], 
-                            float(label_scores[w_id]) + float(total_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])))
-                    
+                        if add_attn == True:
+                            tuple_list.append((dictionary[label_ids[t_i][w_id]], 
+                                float(label_scores[w_id]) + float(total_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])))
+                        else:
+                            tuple_list.append((dictionary[label_ids[t_i][w_id]], 
+                                float(label_scores[w_id]) ))
+
                     tuple_list = sorted(tuple_list, key=lambda x : x[1], reverse=True)
                     for tup in tuple_list[:candidate_num]:                    
                         fout_labels.write("%s\t%f\t" % (tup[0], tup[1]))
@@ -499,7 +503,7 @@ def topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, thet
 
         ############################################
         if val_index:
-            validation(validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents)
+            validation(validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn)
         ############################################
 
         if save:
@@ -627,7 +631,7 @@ def count_width(dictionary, label_phrases_ver, counts, sensi_labels, label_ids):
         count_width_rst.append(t_count)
     return np.array(count_width_rst)
 
-def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents):
+def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn):
     # read changelog
     clog = []
     with open(logfile) as fin:
@@ -772,9 +776,12 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
         "Emerging sentence precision: %s\trecall: %f" % (np.mean(em_sent_precisions), np.mean(em_sent_recalls)))
     logging.info("Phrase F1 score: %f"%label_phrase_fscore)
     logging.info("Sentence F1 score: %f" % label_sent_fscore)
-    with open("../result/statistics.txt", "a") as fout:
-        fout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\n"%(logfile, np.mean(label_phrase_recalls), np.mean(label_sent_recalls), np.mean(em_phrase_precisions), np.mean(em_sent_precisions), label_phrase_fscore, label_sent_fscore))
-
+    if add_attn:
+        with open("../result/statistics_attn.txt", "a") as fout:
+            fout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\n"%(logfile, np.mean(label_phrase_recalls), np.mean(label_sent_recalls), np.mean(em_phrase_precisions), np.mean(em_sent_precisions), label_phrase_fscore, label_sent_fscore))
+    else:
+        with open("../result/statistics_no_attn.txt", "a") as fout:
+            fout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\n"%(logfile, np.mean(label_phrase_recalls), np.mean(label_sent_recalls), np.mean(em_phrase_precisions), np.mean(em_sent_precisions), label_phrase_fscore, label_sent_fscore))
 def sim_w(w1, w2, wv_model):
     if w1 not in wv_model or w2 not in wv_model:
         return 0.0
@@ -835,6 +842,7 @@ if __name__ == '__main__':
     
     candidate_phrase_list = phrases['youtube'].keys()
     total_attn_dict = attention(w2v_model, candidate_phrase_list, topic_dict)
+    topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=False)# mu, lam, theta
     topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)# mu, lam, theta
     print("Totally takes %.2f seconds" % (time.time() - start_t))
 
