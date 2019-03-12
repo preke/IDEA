@@ -663,7 +663,7 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
                 for w in label_phrases[id]:
                     label_match = False
                     for w_s in w.split("_"):
-                        if sim_w(kw, w_s, wv_model) > 0.6:
+                        if sim_w(kw, w_s, wv_model) > 0.5:
                             # hit
                             #logging.info("hit: %s -> %s"%(w, kw))
                             label_match = True
@@ -682,7 +682,7 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
                     for w in sent:
                         label_match = False
                         for w_s in w.split("_"):
-                            if sim_w(kw, w_s, wv_model) > 0.6:
+                            if sim_w(kw, w_s, wv_model) > 0.5:
                                 # hit
                                 #logging.info("hit: %s -> %s"%(w, kw))
                                 label_match = True
@@ -708,7 +708,7 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
                         for w in tws:
                             label_match = False
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.6:
+                                if sim_w(kw, w_s, wv_model) > 0.5:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
@@ -729,7 +729,7 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
                         label_match = False
                         for w in sent:
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.6:
+                                if sim_w(kw, w_s, wv_model) > 0.5:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
@@ -835,7 +835,7 @@ if __name__ == '__main__':
     
     candidate_phrase_list = phrases['youtube'].keys()
     total_attn_dict = attention(w2v_model, candidate_phrase_list, topic_dict)
-    topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)
+    topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)# mu, lam, theta
     print("Totally takes %.2f seconds" % (time.time() - start_t))
 
 
