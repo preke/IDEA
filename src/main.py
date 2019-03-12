@@ -778,9 +778,11 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
     logging.info("Sentence F1 score: %f" % label_sent_fscore)
     if add_attn:
         with open("../result/statistics_attn.txt", "a") as fout:
+            fout.write('With attention!\n')
             fout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\n"%(logfile, np.mean(label_phrase_recalls), np.mean(label_sent_recalls), np.mean(em_phrase_precisions), np.mean(em_sent_precisions), label_phrase_fscore, label_sent_fscore))
     else:
         with open("../result/statistics_no_attn.txt", "a") as fout:
+            fout.write('Without attention!\n')
             fout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\n"%(logfile, np.mean(label_phrase_recalls), np.mean(label_sent_recalls), np.mean(em_phrase_precisions), np.mean(em_sent_precisions), label_phrase_fscore, label_sent_fscore))
 def sim_w(w1, w2, wv_model):
     if w1 not in wv_model or w2 not in wv_model:
