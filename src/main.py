@@ -845,7 +845,7 @@ if __name__ == '__main__':
     
     candidate_phrase_list = phrases['youtube'].keys()
     total_attn_dict = attention(w2v_model, candidate_phrase_list, topic_dict)
-    # topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=False)# mu, lam, theta
+    topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=False)# mu, lam, theta
     topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)# mu, lam, theta
     print("Totally takes %.2f seconds" % (time.time() - start_t))
 
