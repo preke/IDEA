@@ -463,7 +463,7 @@ def topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, thet
                         fout_emerging.write('None\n')
                     else:
                         for w_id in np.argsort(label_scores)[:-4:-1]:
-                            fout_emerging.write("%s\t%f\t" % (dictionary[label_ids[t_i][w_id]], label_scores[w_id]))
+                            fout_emerging.write("%s\t%f\t" % (dictionary[label_ids[t_i][w_id]], label_scores[w_id] + float(total_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])))
                         fout_emerging.write('\n')
                 fout_emerging_sent.write("time slice %s, tag: %s\n"%(t_i, tag[t_i]))
                 for tp_i, sent_scores in enumerate(emerging_sent_scores):
