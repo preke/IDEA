@@ -833,14 +833,14 @@ def attention(w2v_model, candidate_phrase_list, topic_dict):
         
 
 if __name__ == '__main__':
-    w2v_model = extract_phrases(app_files, bigram_min, trigram_min)
-    load_phrase()
-    timed_reviews = extract_review()
-
-    OLDA_input = build_AOLDA_input_version(timed_reviews)
-    phrases = generate_labeling_candidates(OLDA_input)
-    start_t = time.time()
     for i in range(10):
+        w2v_model = extract_phrases(app_files, bigram_min, trigram_min)
+        load_phrase()
+        timed_reviews = extract_review()
+
+        OLDA_input = build_AOLDA_input_version(timed_reviews)
+        phrases = generate_labeling_candidates(OLDA_input)
+        start_t = time.time()
         apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
         candidate_phrase_list = phrases['youtube'].keys()
         total_attn_dict = attention(w2v_model, candidate_phrase_list, topic_dict)
