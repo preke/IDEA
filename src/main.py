@@ -778,11 +778,11 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
     logging.info("Phrase F1 score: %f"%label_phrase_fscore)
     logging.info("Sentence F1 score: %f" % label_sent_fscore)
     if add_attn:
-        with open("../result/statistics_attn.txt", "w") as fout:
+        with open("../result/statistics_attn.txt", "a") as fout:
             fout.write('With attention!\n')
             fout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\n"%(logfile, np.mean(label_phrase_recalls), np.mean(label_sent_recalls), np.mean(em_phrase_precisions), np.mean(em_sent_precisions), label_phrase_fscore, label_sent_fscore))
     else:
-        with open("../result/statistics_no_attn.txt", "w") as fout:
+        with open("../result/statistics_no_attn.txt", "a") as fout:
             fout.write('Without attention!\n')
             fout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\n"%(logfile, np.mean(label_phrase_recalls), np.mean(label_sent_recalls), np.mean(em_phrase_precisions), np.mean(em_sent_precisions), label_phrase_fscore, label_sent_fscore))
 
@@ -838,17 +838,15 @@ if __name__ == '__main__':
     timed_reviews = extract_review()
 
     OLDA_input = build_AOLDA_input_version(timed_reviews)
-    start_t = time.time()
-    apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
-    # print apk_phis
     phrases = generate_labeling_candidates(OLDA_input)
-    # { 'youtube':{'phrase':1} }
-    
-    candidate_phrase_list = phrases['youtube'].keys()
-    total_attn_dict = attention(w2v_model, candidate_phrase_list, topic_dict)
-    topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=False)# mu, lam, theta
-    topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)# mu, lam, theta
-    print("Totally takes %.2f seconds" % (time.time() - start_t))
+    start_t = time.time()
+    for i in range(10):
+        apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
+        candidate_phrase_list = phrases['youtube'].keys()
+        total_attn_dict = attention(w2v_model, candidate_phrase_list, topic_dict)
+        topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=False)# mu, lam, theta
+        topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)# mu, lam, theta
+        print("Totally takes %.2f seconds" % (time.time() - start_t))
 
 
 
