@@ -44,3 +44,5 @@ def extract_phrases(app_files, bigram_min, trigram_min):
     bigram.save(bigram_fp)
     trigram.save(trigram_fp)
     return w2v_model
+
+    
