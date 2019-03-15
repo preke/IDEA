@@ -833,7 +833,7 @@ def attention(w2v_model, candidate_phrase_list, topic_dict):
         
 
 if __name__ == '__main__':
-    for i in range(10):
+    # for i in range(10):
         w2v_model = extract_phrases(app_files, bigram_min, trigram_min)
         load_phrase()
         timed_reviews = extract_review()
