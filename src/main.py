@@ -35,7 +35,7 @@ my_stoplst = ["app", "good", "excellent", "awesome", "please", "they", "very", "
 "won't", "dont", "unless", "you're", "aren't", "i'd", "can't", "wouldn't", "around", "i've", "i'll", "gonna", "ago",
 "you'll", "you'd", "28th", "gen", "it'll", "vice", "would've", "wasn't", "year", "boy", "they'd", "isnt", "1st", "i'm",
 # "nobody", "youtube", "isn't", "don't", "2016", "2017", "since", "near", "god"]
-"nobody", "youtube", "isn't", "don't", "2016", "2017", "since"clean_master", "god"]
+"nobody", "youtube", "isn't", "don't", "2016", "2017", "since", "clean_master", "god"]
 
 
 # dataset
