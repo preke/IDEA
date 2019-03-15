@@ -34,7 +34,8 @@ my_stoplst = ["app", "good", "excellent", "awesome", "please", "they", "very", "
 "rid", "bit", "annoying", "beautiful", "dear", "master", "evernote", "per", "line", "oh", "ah", "cannot", "doesnt",
 "won't", "dont", "unless", "you're", "aren't", "i'd", "can't", "wouldn't", "around", "i've", "i'll", "gonna", "ago",
 "you'll", "you'd", "28th", "gen", "it'll", "vice", "would've", "wasn't", "year", "boy", "they'd", "isnt", "1st", "i'm",
-"nobody", "youtube", "isn't", "don't", "2016", "2017", "since", "near", "god"]
+# "nobody", "youtube", "isn't", "don't", "2016", "2017", "since", "near", "god"]
+"nobody", "youtube", "isn't", "don't", "2016", "2017", "since"clean_master", "god"]
 
 
 # dataset
@@ -842,7 +843,8 @@ if __name__ == '__main__':
         phrases = generate_labeling_candidates(OLDA_input)
         start_t = time.time()
         apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
-        candidate_phrase_list = phrases['youtube'].keys()
+        # candidate_phrase_list = phrases['youtube'].keys()
+        candidate_phrase_list = phrases['clean_master'].keys()
         total_attn_dict = attention(w2v_model, candidate_phrase_list, topic_dict)
         topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=False)# mu, lam, theta
         topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)# mu, lam, theta
