@@ -149,7 +149,7 @@ def build_AOLDA_input_version(timed_reviews=None):
 
     OLDA_input = {}
     for apk, reviews in timed_reviews.items():
-        # build a dictionary to store the version and review
+        # build a dictionary t store the version and review
         version_dict = {}
         input = []
         rate = []
