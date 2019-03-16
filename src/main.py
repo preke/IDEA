@@ -642,6 +642,8 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
             issue_kw = map(lambda s: s.strip().split(), line.split(","))
             clog.append(issue_kw)
     # check alignment
+    print len(clog)
+    print len(label_phrases)
     if len(clog) != len(label_phrases):
         logging.error("length not corrected: %d, %d"%(len(clog), len(label_phrases)))
         exit(0)
