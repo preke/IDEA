@@ -364,7 +364,7 @@ def sim_topic_word(phi, label_id, count):
     c_l = np.array([np.log((count[label_id, w_id] + 1) / float((count[w_id] + 1) * (count[label_id] + 1))) for w_id in range(len(phi))])
     return np.dot(phi, c_l)
 
-def topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, add_attn=True):
+def topic_labeling(topic_num, total_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, add_attn=True):
     """
     Topic labeling for phrase and sentence
     :param OLDA_input:
@@ -505,7 +505,7 @@ def topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, thet
 
         ############################################
         if val_index:
-            validation(validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn)
+            validation(topic_num, validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn)
         ############################################
 
         if save:
@@ -633,7 +633,7 @@ def count_width(dictionary, label_phrases_ver, counts, sensi_labels, label_ids):
         count_width_rst.append(t_count)
     return np.array(count_width_rst)
 
-def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn):
+def validation(topic_num, logfile, label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn):
     # read changelog
     clog = []
     with open(logfile) as fin:
@@ -642,8 +642,6 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
             issue_kw = map(lambda s: s.strip().split(), line.split(","))
             clog.append(issue_kw)
     # check alignment
-    print len(clog)
-    print len(label_phrases)
     if len(clog) != len(label_phrases):
         logging.error("length not corrected: %d, %d"%(len(clog), len(label_phrases)))
         exit(0)
@@ -782,7 +780,7 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
     logging.info("Sentence F1 score: %f" % label_sent_fscore)
     if add_attn:
         with open("../result/statistics_attn.txt", "a") as fout:
-            # fout.write('With attention!\n')
+            fout.write('Topic_num:%d\n'%topic_num)
             fout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\n"%(logfile, np.mean(label_phrase_recalls), np.mean(label_sent_recalls), np.mean(em_phrase_precisions), np.mean(em_sent_precisions), label_phrase_fscore, label_sent_fscore))
     else:
         with open("../result/statistics_no_attn.txt", "a") as fout:
@@ -836,7 +834,7 @@ def attention(w2v_model, candidate_phrase_list, topic_dict):
         
 
 if __name__ == '__main__':
-    # for i in range(10):
+    for topic_num in range(8,20):
         w2v_model = extract_phrases(app_files, bigram_min, trigram_min)
         load_phrase()
         timed_reviews = extract_review()
@@ -849,7 +847,7 @@ if __name__ == '__main__':
         candidate_phrase_list = phrases['clean_master'].keys()
         total_attn_dict = attention(w2v_model, candidate_phrase_list, topic_dict)
         # topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=False)# mu, lam, theta
-        topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)# mu, lam, theta
+        topic_labeling(topic_num, total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
         print("Totally takes %.2f seconds" % (time.time() - start_t))
 
 
