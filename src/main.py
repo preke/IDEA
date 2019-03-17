@@ -844,7 +844,8 @@ if __name__ == '__main__':
         start_t = time.time()
         apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
         # candidate_phrase_list = phrases['youtube'].keys()
-        candidate_phrase_list = phrases['clean_master'].keys()
+        # candidate_phrase_list = phrases['clean_master'].keys()
+        candidate_phrase_list = phrases['viber'].keys()
         total_attn_dict = attention(w2v_model, candidate_phrase_list, topic_dict)
         # topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=False)# mu, lam, theta
         topic_labeling(topic_num, total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
