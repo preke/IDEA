@@ -417,8 +417,8 @@ def topic_labeling(topic_num, total_attn_dict, OLDA_input, apk_phis, phrases, mu
                     for w_id in np.argsort(label_scores):
                         if add_attn == True:
                             # print 'attn'
-                            tuple_list.append( (dictionary[label_ids[t_i][w_id]], float(label_scores[w_id]) + 0.5 * float(total_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]]) ))
-                            topic_label_scores[tp_i][w_id] = float(label_scores[w_id]) + 0.5 * float(total_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])
+                            tuple_list.append( (dictionary[label_ids[t_i][w_id]], float(label_scores[w_id]) + 1 * float(total_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]]) ))
+                            topic_label_scores[tp_i][w_id] = float(label_scores[w_id]) + 1 * float(total_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])
                         else:
                             # print 'no attn'
                             tuple_list.append((dictionary[label_ids[t_i][w_id]], float(label_scores[w_id]) ))
@@ -465,7 +465,7 @@ def topic_labeling(topic_num, total_attn_dict, OLDA_input, apk_phis, phrases, mu
                         fout_emerging.write('None\n')
                     else:
                         for w_id in np.argsort(label_scores)[:-4:-1]:
-                            fout_emerging.write("%s\t%f\t" % (dictionary[label_ids[t_i][w_id]], label_scores[w_id] + 0.5* float(total_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])))
+                            fout_emerging.write("%s\t%f\t" % (dictionary[label_ids[t_i][w_id]], label_scores[w_id] + 1* float(total_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])))
                         fout_emerging.write('\n')
                 fout_emerging_sent.write("time slice %s, tag: %s\n"%(t_i, tag[t_i]))
                 for tp_i, sent_scores in enumerate(emerging_sent_scores):
