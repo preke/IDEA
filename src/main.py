@@ -388,6 +388,7 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
         total_count = total_count_(dictionary, rawinput)
         sensi_label = get_sensitivities(dictionary, rawinput, rates, label_ids)
         rawinput_sent = list(itertools.chain.from_iterable(list(itertools.chain.from_iterable(rawinput))))
+        print rawinput_sent.keys()
         sent_ids, sent_rates = get_candidate_sentences_ids(rawinput, rates)
         sensi_sent = get_sensitivities_sent(rawinput_sent, sent_rates, sent_ids)
         jsds = []
@@ -410,6 +411,7 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
             # write to file: topic phrase
             if save:
                 fout_labels.write("time slice %s, tag: %s\n"%(t_i, tag[t_i]))
+                '''
                 for tp_i, label_scores in enumerate(topic_label_scores):
                     fout_labels.write("Topic %d:"%tp_i)
                     
@@ -427,16 +429,16 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
                     for tup in tuple_list[:candidate_num]:                    
                         fout_labels.write("%s\t%f\t" % (tup[0], tup[1]))
                     fout_labels.write('\n')
-
+                '''
                 fout_sents.write("time slice %s, tag: %s\n" % (t_i, tag[t_i]))
                 for tp_i, sent_scores in enumerate(topic_label_sent_score):
                     fout_sents.write("Topic %d:"%tp_i)
                     tuple_list = []
                     for s_id in np.argsort(sent_scores)[:-candidate_num-1:-1]:
                         if add_attn == True:
-                            tuple_list.append((rawinput_sent[sent_ids[t_i][s_id]]), sent_scores[s_id] + 1 * )
+                            tuple_list.append((rawinput_sent[sent_ids[t_i][s_id]]), sent_scores[s_id])
                             # fout_sents.write("%s\t%f\t"%(" ".join(rawinput_sent[sent_ids[t_i][s_id]]), sent_scores[s_id]))
-                            topic_label_sent_score[tp_i][s_id]= sent_scores[s_id] + 1 * 
+                            topic_label_sent_score[tp_i][s_id]= sent_scores[s_id] 
                         else:
 
                     fout_sents.write('\n')
