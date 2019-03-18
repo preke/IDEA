@@ -389,6 +389,7 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
         sensi_label = get_sensitivities(dictionary, rawinput, rates, label_ids)
         rawinput_sent = list(itertools.chain.from_iterable(list(itertools.chain.from_iterable(rawinput))))
         sent_ids, sent_rates = get_candidate_sentences_ids(rawinput, rates)
+
         sensi_sent = get_sensitivities_sent(rawinput_sent, sent_rates, sent_ids)
         jsds = []
         label_phrases = []; label_sents = []; emerge_phrases = []; emerge_sents = []
@@ -410,7 +411,7 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
             # write to file: topic phrase
             if save:
                 fout_labels.write("time slice %s, tag: %s\n"%(t_i, tag[t_i]))
-                '''
+                
                 for tp_i, label_scores in enumerate(topic_label_scores):
                     fout_labels.write("Topic %d:"%tp_i)
                     
@@ -428,16 +429,16 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
                     for tup in tuple_list[:candidate_num]:                    
                         fout_labels.write("%s\t%f\t" % (tup[0], tup[1]))
                     fout_labels.write('\n')
-                '''
+                
                 fout_sents.write("time slice %s, tag: %s\n" % (t_i, tag[t_i]))
                 for tp_i, sent_scores in enumerate(topic_label_sent_score):
                     fout_sents.write("Topic %d:"%tp_i)
-                    tuple_list = []
+                    # tuple_list = []
                     for s_id in np.argsort(sent_scores)[:-candidate_num-1:-1]:
                         if add_attn == True:
-                            tuple_list.append((rawinput_sent[sent_ids[t_i][s_id]]), sent_scores[s_id])
-                            # fout_sents.write("%s\t%f\t"%(" ".join(rawinput_sent[sent_ids[t_i][s_id]]), sent_scores[s_id]))
-                            topic_label_sent_score[tp_i][s_id]= sent_scores[s_id] 
+                            # tuple_list.append((rawinput_sent[sent_ids[t_i][s_id]]), sent_scores[s_id])
+                            fout_sents.write("%s\t%f\t"%(" ".join(rawinput_sent[sent_ids[t_i][s_id]]), sent_scores[s_id]))
+                            # topic_label_sent_score[tp_i][s_id]= sent_scores[s_id] 
                         else:
                             pass
                     fout_sents.write('\n')
@@ -512,8 +513,7 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
 
         ############################################
         if val_index:
-            pass
-            # validation(topic_num, validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn)
+            validation(topic_num, validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn)
         ############################################
 
         if save:
@@ -896,8 +896,7 @@ if __name__ == '__main__':
         # candidate_phrase_list = phrases['viber'].keys()
         candidate_phrase_list = phrases['ebay'].keys()
         phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_sentences_model, candidate_phrase_list, topic_dict)
-        sentence_attn_dict = sentence_attn(w2v_sentences_model, rawinput_sent, topic_dict)
-        # topic_labeling(phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=False)# mu, lam, theta
+        # sentence_attn_dict = sentence_attn(w2v_sentences_model, rawinput_sent, topic_dict)
         topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
         print("Totally takes %.2f seconds" % (time.time() - start_t))
 
