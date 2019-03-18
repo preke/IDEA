@@ -841,7 +841,7 @@ def phrases_attention(w2v_model, candidate_phrase_list, topic_dict):
     
     return phrase_attn_dict
         
-def sentence_attn(w2v_model, sentence, )
+# def sentence_attn(w2v_model, sentence, )
 
 if __name__ == '__main__':
     for topic_num in range(8,9):
