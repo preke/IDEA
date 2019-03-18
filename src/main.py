@@ -388,7 +388,8 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
         total_count = total_count_(dictionary, rawinput)
         sensi_label = get_sensitivities(dictionary, rawinput, rates, label_ids)
         rawinput_sent = list(itertools.chain.from_iterable(list(itertools.chain.from_iterable(rawinput))))
-        print rawinput_sent.keys()
+        for it in rawinput_sent[:10]:
+            print it
         sent_ids, sent_rates = get_candidate_sentences_ids(rawinput, rates)
         sensi_sent = get_sensitivities_sent(rawinput_sent, sent_rates, sent_ids)
         jsds = []
