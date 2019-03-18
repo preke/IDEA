@@ -380,7 +380,6 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
     apk_jsds = {}
     for apk, item in OLDA_input.items():
         dictionary, _, rawinput, rates, tag = item
-        print rawinput.keys()
         phis = apk_phis[apk]
         labels = phrases[apk].keys()
         # label_ids = map(dictionary.token2id.get, labels)
@@ -813,7 +812,7 @@ def softmax(x):
     return np.exp(x)/np.sum(np.exp(x),axis=0)
 
 
-def phrases_attention(w2v_model, candidate_phrase_list, topic_dict):
+def phrases_attention(w2v_phrase_model, w2v_sentences_model, candidate_phrase_list, topic_dict):
     phrase_attn_dict = {}
     for t_slide, topic_dict_1_slide in topic_dict.iteritems():        
         # for each time slide
@@ -821,12 +820,12 @@ def phrases_attention(w2v_model, candidate_phrase_list, topic_dict):
         for topic, topic_words in topic_dict_1_slide.iteritems():
             phrase_score = {}
             for phrase in candidate_phrase_list:
-                embed1 = w2v_model[phrase]
+                embed1 = w2v_phrase_model[phrase]
                 tmp_list = []
                 probs = []
                 for word_prob in topic_words:
                     try:
-                        embed2 = w2v_model[word_prob[0]]
+                        embed2 =w2v_sentences_model[word_prob[0]]
                     except: #oov
                         embed2 = oov_embed
                     tmp_list.append(1.0 - spatial.distance.cosine(embed1, embed2))
@@ -841,15 +840,54 @@ def phrases_attention(w2v_model, candidate_phrase_list, topic_dict):
     
     return phrase_attn_dict
         
-# def sentence_attn(w2v_model, sentence, )
+def sentence_attn(w2v_sentences_model, sentence, topic_dict):
+    sentences_attn_dict = {}
+    for t_slide, topic_dict_1_slide in topic_dict.iteritems():        
+        # for each time slide
+        oov_embed = np.random.randn(1, 100)
+        for topic, topic_words in topic_dict_1_slide.iteritems():
+            sentences_score = {}
+            for sentences in candidate_sentences_list:
+                embed_list = []
+                for word in sentences:
+                    embed_list.append(w2v_sentences_model[word])
+                tmp_list = []
+                probs = []
+                for word_prob in topic_words:
+                    try:
+                        embed2 = w2v_sentences_model[word_prob[0]]
+                    except: #oov
+                        embed2 = oov_embed
+                    tmp_mid_list = []
+                    for embed1 in embed_list:    
+                        tmp_mid_list.append(1.0 - spatial.distance.cosine(embed1, embed2))
+                    tmp_list.append(tmp_mid_list)
+                    probs.append(float(str(word_prob[1])))
+                tmp_list = np.sum(np.array(tmp_list), axis=0)
+                weights = softmax(np.array(tmp_list))
+                probs = np.array(probs)
+                attn_score = np.dot(weights, probs)
+                sentences_score[sentences] = attn_score
+            topic_dict_1_slide[topic] = sentences_score
+        sentences_attn_dict[t_slide] = topic_dict_1_slide
+    
+    return sentences_attn_dict
+
+def build_sentence_w2v_model(OLDA_input):
+    for apk, item in OLDA_input.items():
+        dictionary, _, rawinput, rates, tag = item
+        rawinput_sent = list(itertools.chain.from_iterable(list(itertools.chain.from_iterable(rawinput))))
+        w2v_sentences_model = Word2Vec(rawinput_sent, min_count=1)
+    return rawinput_sent, w2v_sentences_model
 
 if __name__ == '__main__':
     for topic_num in range(8,9):
-        w2v_model = extract_phrases(app_files, bigram_min, trigram_min)
+        w2v_phrase_model = extract_phrases(app_files, bigram_min, trigram_min)
         load_phrase()
         timed_reviews = extract_review()
-
         OLDA_input = build_AOLDA_input_version(timed_reviews)
+        rawinput_sent, w2v_sentences_model = build_sentence_w2v_model(OLDA_input)
+
         phrases = generate_labeling_candidates(OLDA_input)
         start_t = time.time()
         apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
@@ -857,7 +895,8 @@ if __name__ == '__main__':
         # candidate_phrase_list = phrases['clean_master'].keys()
         # candidate_phrase_list = phrases['viber'].keys()
         candidate_phrase_list = phrases['ebay'].keys()
-        phrase_attn_dict = phrases_attention(w2v_model, candidate_phrase_list, topic_dict)
+        phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_sentences_model, candidate_phrase_list, topic_dict)
+        sentence_attn_dict = sentence_attn(w2v_sentences_model, rawinput_sent, topic_dict)
         # topic_labeling(phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=False)# mu, lam, theta
         topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
         print("Totally takes %.2f seconds" % (time.time() - start_t))
