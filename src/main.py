@@ -364,7 +364,7 @@ def sim_topic_word(phi, label_id, count):
     c_l = np.array([np.log((count[label_id, w_id] + 1) / float((count[w_id] + 1) * (count[label_id] + 1))) for w_id in range(len(phi))])
     return np.dot(phi, c_l)
 
-def topic_labeling(topic_num, total_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, add_attn=True):
+def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, add_attn=True):
     """
     Topic labeling for phrase and sentence
     :param OLDA_input:
@@ -417,8 +417,8 @@ def topic_labeling(topic_num, total_attn_dict, OLDA_input, apk_phis, phrases, mu
                     for w_id in np.argsort(label_scores):
                         if add_attn == True:
                             # print 'attn'
-                            tuple_list.append( (dictionary[label_ids[t_i][w_id]], float(label_scores[w_id]) + 1 * float(total_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]]) ))
-                            topic_label_scores[tp_i][w_id] = float(label_scores[w_id]) + 1 * float(total_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])
+                            tuple_list.append( (dictionary[label_ids[t_i][w_id]], float(label_scores[w_id]) + 1 * float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]]) ))
+                            topic_label_scores[tp_i][w_id] = float(label_scores[w_id]) + 1 * float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])
                         else:
                             # print 'no attn'
                             tuple_list.append((dictionary[label_ids[t_i][w_id]], float(label_scores[w_id]) ))
@@ -431,8 +431,14 @@ def topic_labeling(topic_num, total_attn_dict, OLDA_input, apk_phis, phrases, mu
                 fout_sents.write("time slice %s, tag: %s\n" % (t_i, tag[t_i]))
                 for tp_i, sent_scores in enumerate(topic_label_sent_score):
                     fout_sents.write("Topic %d:"%tp_i)
+                    tuple_list = []
                     for s_id in np.argsort(sent_scores)[:-candidate_num-1:-1]:
-                        fout_sents.write("%s\t%f\t"%(" ".join(rawinput_sent[sent_ids[t_i][s_id]]), sent_scores[s_id]))
+                        if add_attn == True:
+                            tuple_list.append((rawinput_sent[sent_ids[t_i][s_id]]), sent_scores[s_id] + 1 * )
+                            # fout_sents.write("%s\t%f\t"%(" ".join(rawinput_sent[sent_ids[t_i][s_id]]), sent_scores[s_id]))
+                            topic_label_sent_score[tp_i][s_id]= sent_scores[s_id] + 1 * 
+                        else:
+
                     fout_sents.write('\n')
 
             # store for verification
@@ -465,7 +471,7 @@ def topic_labeling(topic_num, total_attn_dict, OLDA_input, apk_phis, phrases, mu
                         fout_emerging.write('None\n')
                     else:
                         for w_id in np.argsort(label_scores)[:-4:-1]:
-                            fout_emerging.write("%s\t%f\t" % (dictionary[label_ids[t_i][w_id]], label_scores[w_id] + 1* float(total_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])))
+                            fout_emerging.write("%s\t%f\t" % (dictionary[label_ids[t_i][w_id]], label_scores[w_id] + 1* float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])))
                         fout_emerging.write('\n')
                 fout_emerging_sent.write("time slice %s, tag: %s\n"%(t_i, tag[t_i]))
                 for tp_i, sent_scores in enumerate(emerging_sent_scores):
@@ -505,7 +511,8 @@ def topic_labeling(topic_num, total_attn_dict, OLDA_input, apk_phis, phrases, mu
 
         ############################################
         if val_index:
-            validation(topic_num, validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn)
+            pass
+            # validation(topic_num, validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn)
         ############################################
 
         if save:
@@ -804,8 +811,8 @@ def softmax(x):
     return np.exp(x)/np.sum(np.exp(x),axis=0)
 
 
-def attention(w2v_model, candidate_phrase_list, topic_dict):
-    total_attn_dict = {}
+def phrases_attention(w2v_model, candidate_phrase_list, topic_dict):
+    phrase_attn_dict = {}
     for t_slide, topic_dict_1_slide in topic_dict.iteritems():        
         # for each time slide
         oov_embed = np.random.randn(1, 100)
@@ -828,13 +835,14 @@ def attention(w2v_model, candidate_phrase_list, topic_dict):
                 phrase_score[phrase] = attn_score
 
             topic_dict_1_slide[topic] = phrase_score
-        total_attn_dict[t_slide] = topic_dict_1_slide
+        phrase_attn_dict[t_slide] = topic_dict_1_slide
     
-    return total_attn_dict
+    return phrase_attn_dict
         
+def sentence_attn(w2v_model, sentence, )
 
 if __name__ == '__main__':
-    for topic_num in range(8,20):
+    for topic_num in range(8,9):
         w2v_model = extract_phrases(app_files, bigram_min, trigram_min)
         load_phrase()
         timed_reviews = extract_review()
@@ -847,9 +855,9 @@ if __name__ == '__main__':
         # candidate_phrase_list = phrases['clean_master'].keys()
         # candidate_phrase_list = phrases['viber'].keys()
         candidate_phrase_list = phrases['ebay'].keys()
-        total_attn_dict = attention(w2v_model, candidate_phrase_list, topic_dict)
-        # topic_labeling(total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=False)# mu, lam, theta
-        topic_labeling(topic_num, total_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
+        phrase_attn_dict = phrases_attention(w2v_model, candidate_phrase_list, topic_dict)
+        # topic_labeling(phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=False)# mu, lam, theta
+        topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
         print("Totally takes %.2f seconds" % (time.time() - start_t))
 
 
