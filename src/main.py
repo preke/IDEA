@@ -840,16 +840,16 @@ def phrases_attention(w2v_phrase_model, w2v_sentences_model, candidate_phrase_li
     
     return phrase_attn_dict
         
-def sentence_attn(w2v_sentences_model, sentence, topic_dict):
+def sentence_attn(w2v_sentences_model, sentences, topic_dict):
     sentences_attn_dict = {}
     for t_slide, topic_dict_1_slide in topic_dict.iteritems():        
         # for each time slide
         oov_embed = np.random.randn(1, 100)
         for topic, topic_words in topic_dict_1_slide.iteritems():
             sentences_score = {}
-            for sentences in candidate_sentences_list:
+            for sentence in sentences:
                 embed_list = []
-                for word in sentences:
+                for word in sentence:
                     embed_list.append(w2v_sentences_model[word])
                 tmp_list = []
                 probs = []
