@@ -814,6 +814,7 @@ def softmax(x):
 
 def phrases_attention(w2v_phrase_model, w2v_sentences_model, candidate_phrase_list, topic_dict):
     phrase_attn_dict = {}
+    tmp_topic_dict_1_slide = {}
     for t_slide, topic_dict_1_slide in topic_dict.iteritems():        
         # for each time slide
         oov_embed = np.random.randn(1, 100)
@@ -835,18 +836,20 @@ def phrases_attention(w2v_phrase_model, w2v_sentences_model, candidate_phrase_li
                 attn_score = np.dot(weights, probs)
                 phrase_score[phrase] = attn_score
 
-            topic_dict_1_slide[topic] = phrase_score
-        phrase_attn_dict[t_slide] = topic_dict_1_slide
+            tmp_topic_dict_1_slide[topic] = phrase_score
+        phrase_attn_dict[t_slide] = tmp_topic_dict_1_slide
     
     return phrase_attn_dict
         
 def sentence_attn(w2v_sentences_model, sentences, topic_dict):
     sentences_attn_dict = {}
+    tmp_topic_dict_1_slide = {}
     for t_slide, topic_dict_1_slide in topic_dict.iteritems():        
         # for each time slide
         oov_embed = np.random.randn(1, 100)
         for topic, topic_words in topic_dict_1_slide.iteritems():
             sentences_score = {}
+            sentence_id = 0
             for sentence in sentences:
                 embed_list = []
                 for word in sentence:
@@ -863,13 +866,15 @@ def sentence_attn(w2v_sentences_model, sentences, topic_dict):
                         tmp_mid_list.append(1.0 - spatial.distance.cosine(embed1, embed2))
                     tmp_list.append(tmp_mid_list)
                     probs.append(float(str(word_prob[1])))
-                tmp_list = np.sum(np.array(tmp_list), axis=0)
+                    
+                tmp_list = np.sum(np.array(tmp_list), axis=1)
                 weights = softmax(np.array(tmp_list))
                 probs = np.array(probs)
                 attn_score = np.dot(weights, probs)
-                sentences_score[sentences] = attn_score
-            topic_dict_1_slide[topic] = sentences_score
-        sentences_attn_dict[t_slide] = topic_dict_1_slide
+                sentences_score[sentence_id] = attn_score
+                sentence_id += 1
+            tmp_topic_dict_1_slide[topic] = sentences_score
+        sentences_attn_dict[t_slide] = tmp_topic_dict_1_slide
     
     return sentences_attn_dict
 
