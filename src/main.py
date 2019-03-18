@@ -899,7 +899,7 @@ if __name__ == '__main__':
         # candidate_phrase_list = phrases['youtube'].keys()
         # candidate_phrase_list = phrases['clean_master'].keys()
         # candidate_phrase_list = phrases['viber'].keys()
-        candidate_phrase_list = phrases['ebay'].keys()
+        candidate_phrase_list = phrases['swiftkey'].keys()
         phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_sentences_model, candidate_phrase_list, topic_dict)
         # sentence_attn_dict = sentence_attn(w2v_sentences_model, rawinput_sent, topic_dict)
         topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
