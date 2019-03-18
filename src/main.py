@@ -440,7 +440,7 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
                             # fout_sents.write("%s\t%f\t"%(" ".join(rawinput_sent[sent_ids[t_i][s_id]]), sent_scores[s_id]))
                             topic_label_sent_score[tp_i][s_id]= sent_scores[s_id] 
                         else:
-
+                            pass
                     fout_sents.write('\n')
 
             # store for verification
