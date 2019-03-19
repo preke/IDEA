@@ -419,6 +419,8 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
                     for w_id in np.argsort(label_scores):
                         if add_attn == True:
                             # print 'attn'
+                            print '%f\t%f\n' %(float(label_scores[w_id]), float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]]))
+
                             tuple_list.append( (dictionary[label_ids[t_i][w_id]], float(label_scores[w_id]) +  1* float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]]) ))
                             topic_label_scores[tp_i][w_id] = float(label_scores[w_id]) + 1 * float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])
                         else:
