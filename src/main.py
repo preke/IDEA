@@ -886,7 +886,7 @@ def build_sentence_w2v_model(OLDA_input):
     return rawinput_sent, w2v_sentences_model
 
 if __name__ == '__main__':
-    for topic_num in range(8,20):
+    for topic_num in range(8, 20):
         w2v_phrase_model = extract_phrases(app_files, bigram_min, trigram_min)
         load_phrase()
         timed_reviews = extract_review()
@@ -896,10 +896,10 @@ if __name__ == '__main__':
         phrases = generate_labeling_candidates(OLDA_input)
         start_t = time.time()
         apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
-        # candidate_phrase_list = phrases['youtube'].keys()
+        candidate_phrase_list = phrases['youtube'].keys()
         # candidate_phrase_list = phrases['clean_master'].keys()
         # candidate_phrase_list = phrases['viber'].keys()
-        candidate_phrase_list = phrases['swiftkey'].keys()
+        # candidate_phrase_list = phrases['swiftkey'].keys()
         phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_sentences_model, candidate_phrase_list, topic_dict)
         # sentence_attn_dict = sentence_attn(w2v_sentences_model, rawinput_sent, topic_dict)
         topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
