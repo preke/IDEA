@@ -817,20 +817,21 @@ def phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_
     tmp_topic_dict_1_slide = {}
     for t_slide, topic_dict_1_slide in topic_dict.iteritems():        
         # for each time slide
-        oov_embed = np.random.randn(1, 100)
+        oov_embed = np.random.randn(1, 200)
         for topic, topic_words in topic_dict_1_slide.iteritems():
             phrase_score = {}
             for phrase in candidate_phrase_list:
                 embed1 = w2v_phrase_model[phrase]
                 tmp_list = []
                 probs = []
+                oov_num = 0
                 for word_prob in topic_words:
                     try:
                         embed2 =w2v_model[word_prob[0]]
                     except: #oov
                         embed2 = oov_embed
-                    print len(embed1)
-                    print len(embed2)
+                        oov_num += 1
+                print 'Total %d oov words.'%oov_num
                     tmp_list.append(1.0 - spatial.distance.cosine(embed1, embed2))
                     probs.append(float(str(word_prob[1])))
                 weights = softmax(np.array(tmp_list))
