@@ -39,7 +39,7 @@ def extract_phrases(app_files, bigram_min, trigram_min):
     bigram = Phrases(gen, threshold=5, min_count=bigram_min)
     trigram = Phrases(bigram[gen], threshold=3, min_count=trigram_min)
 
-    w2v_model = Word2Vec(trigram[bigram[gen]], min_count=1, size=200)
+    w2v_model = Word2Vec(trigram[bigram[gen]], min_count=1, size=100)
     # write
     bigram.save(bigram_fp)
     trigram.save(trigram_fp)

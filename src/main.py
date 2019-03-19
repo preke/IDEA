@@ -829,6 +829,8 @@ def phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_
                         embed2 =w2v_model[word_prob[0]]
                     except: #oov
                         embed2 = oov_embed
+                    print len(embed1)
+                    print len(embed2)
                     tmp_list.append(1.0 - spatial.distance.cosine(embed1, embed2))
                     probs.append(float(str(word_prob[1])))
                 weights = softmax(np.array(tmp_list))
