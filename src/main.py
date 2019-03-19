@@ -831,9 +831,11 @@ def phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_
                     except: #oov
                         embed2 = oov_embed
                         oov_num += 1
-                print 'Total %d oov words.'%oov_num
+
                     tmp_list.append(1.0 - spatial.distance.cosine(embed1, embed2))
                     probs.append(float(str(word_prob[1])))
+                
+                print 'Total %d oov words.'%oov_num
                 weights = softmax(np.array(tmp_list))
                 probs = np.array(probs)
                 attn_score = np.dot(weights, probs)
