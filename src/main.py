@@ -812,7 +812,7 @@ def softmax(x):
     return np.exp(x)/np.sum(np.exp(x),axis=0)
 
 
-def phrases_attention(w2v_phrase_model, w2v_sentences_model, candidate_phrase_list, topic_dict):
+def phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_dict):
     phrase_attn_dict = {}
     tmp_topic_dict_1_slide = {}
     for t_slide, topic_dict_1_slide in topic_dict.iteritems():        
@@ -826,7 +826,7 @@ def phrases_attention(w2v_phrase_model, w2v_sentences_model, candidate_phrase_li
                 probs = []
                 for word_prob in topic_words:
                     try:
-                        embed2 =w2v_sentences_model[word_prob[0]]
+                        embed2 =w2v_model[word_prob[0]]
                     except: #oov
                         embed2 = oov_embed
                     tmp_list.append(1.0 - spatial.distance.cosine(embed1, embed2))
@@ -891,7 +891,7 @@ if __name__ == '__main__':
         load_phrase()
         timed_reviews = extract_review()
         OLDA_input = build_AOLDA_input_version(timed_reviews)
-        rawinput_sent, w2v_sentences_model = build_sentence_w2v_model(OLDA_input)
+        
 
         phrases = generate_labeling_candidates(OLDA_input)
         start_t = time.time()
@@ -900,8 +900,13 @@ if __name__ == '__main__':
         # candidate_phrase_list = phrases['clean_master'].keys()
         # candidate_phrase_list = phrases['viber'].keys()
         # candidate_phrase_list = phrases['swiftkey'].keys()
-        phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_sentences_model, candidate_phrase_list, topic_dict)
-        # sentence_attn_dict = sentence_attn(w2v_sentences_model, rawinput_sent, topic_dict)
+
+        '''
+        rawinput_sent, w2v_sentences_model = build_sentence_w2v_model(OLDA_input)
+        sentence_attn_dict = sentence_attn(w2v_sentences_model, rawinput_sent, topic_dict)
+        '''
+        w2v_model = Word2Vec.load(os.path.join("..", "model", "wv", "word2vec_app.model"))
+        phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_dict)
         topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
         print("Totally takes %.2f seconds" % (time.time() - start_t))
 
