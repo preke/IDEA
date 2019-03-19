@@ -421,8 +421,8 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
                             # print 'attn'
                             print '%f\t%f\n' %(float(label_scores[w_id]), float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]]))
 
-                            tuple_list.append( (dictionary[label_ids[t_i][w_id]], float(label_scores[w_id]) +  10* float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]]) ))
-                            topic_label_scores[tp_i][w_id] = float(label_scores[w_id]) + 10 * float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])
+                            tuple_list.append( (dictionary[label_ids[t_i][w_id]], float(label_scores[w_id]) +  1* float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]]) ))
+                            topic_label_scores[tp_i][w_id] = float(label_scores[w_id]) + 1 * float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])
                         else:
                             # print 'no attn'
                             tuple_list.append((dictionary[label_ids[t_i][w_id]], float(label_scores[w_id]) ))
@@ -475,7 +475,7 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
                         fout_emerging.write('None\n')
                     else:
                         for w_id in np.argsort(label_scores)[:-4:-1]:
-                            fout_emerging.write("%s\t%f\t" % (dictionary[label_ids[t_i][w_id]], label_scores[w_id] + 10* float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])))
+                            fout_emerging.write("%s\t%f\t" % (dictionary[label_ids[t_i][w_id]], label_scores[w_id] + 1* float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])))
                         fout_emerging.write('\n')
                 fout_emerging_sent.write("time slice %s, tag: %s\n"%(t_i, tag[t_i]))
                 for tp_i, sent_scores in enumerate(emerging_sent_scores):
@@ -790,7 +790,7 @@ def validation(topic_num, logfile, label_phrases, label_sents, emerge_phrases, e
     logging.info("Sentence F1 score: %f" % label_sent_fscore)
     if add_attn:
         with open("../result/statistics_attn.txt", "a") as fout:
-            fout.write('a - 10 b; Topic_num:%d\n'%topic_num)
+            fout.write('a - 1 b; Topic_num:%d\n'%topic_num)
             fout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\n"%(logfile, np.mean(em_phrase_precisions), np.mean(label_phrase_recalls), label_phrase_fscore, np.mean(label_sent_recalls), np.mean(em_sent_precisions), label_sent_fscore))
     else:
         with open("../result/statistics_no_attn.txt", "a") as fout:
@@ -893,7 +893,7 @@ def build_sentence_w2v_model(OLDA_input):
     return rawinput_sent, w2v_sentences_model
 
 if __name__ == '__main__':
-    for topic_num in range(14, 15):
+    for topic_num in range(8, 20):
         w2v_phrase_model = extract_phrases(app_files, bigram_min, trigram_min)
         load_phrase()
         timed_reviews = extract_review()
