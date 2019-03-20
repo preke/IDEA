@@ -679,7 +679,7 @@ def validation(topic_num, logfile, label_phrases, label_sents, emerge_phrases, e
                 for w in label_phrases[id]:
                     label_match = False
                     for w_s in w.split("_"):
-                        if sim_w(kw, w_s, wv_model) > 0.5:
+                        if sim_w(kw, w_s, wv_model) > 0.45:
                             # hit
                             #logging.info("hit: %s -> %s"%(w, kw))
                             label_match = True
@@ -698,7 +698,7 @@ def validation(topic_num, logfile, label_phrases, label_sents, emerge_phrases, e
                     for w in sent:
                         label_match = False
                         for w_s in w.split("_"):
-                            if sim_w(kw, w_s, wv_model) > 0.5:
+                            if sim_w(kw, w_s, wv_model) > 0.45:
                                 # hit
                                 #logging.info("hit: %s -> %s"%(w, kw))
                                 label_match = True
@@ -724,7 +724,7 @@ def validation(topic_num, logfile, label_phrases, label_sents, emerge_phrases, e
                         for w in tws:
                             label_match = False
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.5:
+                                if sim_w(kw, w_s, wv_model) > 0.45:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
@@ -745,7 +745,7 @@ def validation(topic_num, logfile, label_phrases, label_sents, emerge_phrases, e
                         label_match = False
                         for w in sent:
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.5:
+                                if sim_w(kw, w_s, wv_model) > 0.45:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
