@@ -685,6 +685,9 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                             label_match = True
                             kw_match = True
                             break
+                    if sim_w(kw, w, w2v_phrase_model) > 0.4:
+                            label_match = True
+                            kw_match = True
                     if label_match: # if label match found, add label to match set
                         label_phrase_match_set.add(w)
                 if kw_match:    # if kw match found, add issue to match set
@@ -724,12 +727,15 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                         for w in tws:
                             label_match = False
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.45:
+                                if sim_w(kw, w_s, wv_model) > 0.4:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
                                     kw_match = True
                                     break
+                            if sim_w(kw, w, w2v_phrase_model) > 0.4:
+                                label_match = True
+                                kw_match = True
                             if label_match:
                                 em_phrase_match_set.add("_".join(tws))
                                 break
@@ -745,7 +751,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                         label_match = False
                         for w in sent:
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.45:
+                                if sim_w(kw, w_s, wv_model) > 0.4:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
@@ -814,7 +820,7 @@ def softmax(x):
     return np.exp(x)/np.sum(np.exp(x),axis=0)
 
 
-def phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_dict):
+def phrases_attention(w2v_phrase_model, candidate_phrase_list, topic_dict):
     phrase_attn_dict = {}
     tmp_topic_dict_1_slide = {}
     for t_slide, topic_dict_1_slide in topic_dict.iteritems():        
@@ -914,7 +920,7 @@ if __name__ == '__main__':
         '''
         w2v_model = Word2Vec.load(os.path.join("..", "model", "wv", "word2vec_app.model"))
         # phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_dict)
-        phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_phrase_model, candidate_phrase_list, topic_dict)
+        phrase_attn_dict = phrases_attention(w2v_phrase_model, candidate_phrase_list, topic_dict)
         topic_labeling(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
         print("Totally takes %.2f seconds" % (time.time() - start_t))
 
