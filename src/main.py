@@ -364,7 +364,7 @@ def sim_topic_word(phi, label_id, count):
     c_l = np.array([np.log((count[label_id, w_id] + 1) / float((count[w_id] + 1) * (count[label_id] + 1))) for w_id in range(len(phi))])
     return np.dot(phi, c_l)
 
-def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, add_attn=True):
+def topic_labeling(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, add_attn=True):
     """
     Topic labeling for phrase and sentence
     :param OLDA_input:
@@ -515,7 +515,7 @@ def topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, m
 
         ############################################
         if val_index:
-            validation(topic_num, validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn)
+            validation(w2v_phrase_model, topic_num, validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn)
         ############################################
 
         if save:
@@ -643,7 +643,7 @@ def count_width(dictionary, label_phrases_ver, counts, sensi_labels, label_ids):
         count_width_rst.append(t_count)
     return np.array(count_width_rst)
 
-def validation(topic_num, logfile, label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn):
+def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn):
     # read changelog
     clog = []
     with open(logfile) as fin:
@@ -829,7 +829,7 @@ def phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_
                 oov_num = 0
                 for word_prob in topic_words:
                     try:
-                        embed2 = w2v_model[word_prob[0]]
+                        embed2 = w2v_phrase_model[word_prob[0]]
                     except: #oov
                         embed2 = oov_embed
                         oov_num += 1
@@ -837,7 +837,7 @@ def phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_
                     tmp_list.append(1 - spatial.distance.cosine(embed1, embed2))
                     probs.append(float(str(word_prob[1])))
                 
-                # print 'Total %d oov words.'%oov_num
+                print 'Total %d oov words.'%oov_num
                 weights = softmax(np.array(tmp_list))
                 probs = np.array(probs)
                 attn_score = np.dot(weights, probs)
@@ -915,7 +915,7 @@ if __name__ == '__main__':
         w2v_model = Word2Vec.load(os.path.join("..", "model", "wv", "word2vec_app.model"))
         # phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_dict)
         phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_phrase_model, candidate_phrase_list, topic_dict)
-        topic_labeling(topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
+        topic_labeling(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
         print("Totally takes %.2f seconds" % (time.time() - start_t))
 
 
