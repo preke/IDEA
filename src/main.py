@@ -685,9 +685,9 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                             label_match = True
                             kw_match = True
                             break
-                    if sim_w(kw, w, w2v_phrase_model) > 0.5:
-                            label_match = True
-                            kw_match = True
+                    # if sim_w(kw, w, w2v_phrase_model) > 0.5:
+                    #         label_match = True
+                    #         kw_match = True
                     if label_match: # if label match found, add label to match set
                         label_phrase_match_set.add(w)
                 if kw_match:    # if kw match found, add issue to match set
@@ -909,7 +909,8 @@ if __name__ == '__main__':
         phrases = generate_labeling_candidates(OLDA_input)
         start_t = time.time()
         apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
-        candidate_phrase_list = phrases['youtube'].keys()
+        candidate_phrase_list = phrases['rader'].keys()
+        # candidate_phrase_list = phrases['youtube'].keys()
         # candidate_phrase_list = phrases['clean_master'].keys()
         # candidate_phrase_list = phrases['viber'].keys()
         # candidate_phrase_list = phrases['swiftkey'].keys()
