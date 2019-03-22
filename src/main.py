@@ -909,7 +909,7 @@ if __name__ == '__main__':
         phrases = generate_labeling_candidates(OLDA_input)
         start_t = time.time()
         apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
-        candidate_phrase_list = phrases['rader'].keys()
+        candidate_phrase_list = phrases['radar'].keys()
         # candidate_phrase_list = phrases['youtube'].keys()
         # candidate_phrase_list = phrases['clean_master'].keys()
         # candidate_phrase_list = phrases['viber'].keys()
