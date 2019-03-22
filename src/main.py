@@ -679,7 +679,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                 for w in label_phrases[id]:
                     label_match = False
                     for w_s in w.split("_"):
-                        if sim_w(kw, w_s, wv_model) > 0.5:
+                        if sim_w(kw, w_s, wv_model) > 0.6:
                             # hit
                             #logging.info("hit: %s -> %s"%(w, kw))
                             label_match = True
@@ -701,7 +701,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                     for w in sent:
                         label_match = False
                         for w_s in w.split("_"):
-                            if sim_w(kw, w_s, wv_model) > 0.5:
+                            if sim_w(kw, w_s, wv_model) > 0.6:
                                 # hit
                                 #logging.info("hit: %s -> %s"%(w, kw))
                                 label_match = True
@@ -733,9 +733,9 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                                     label_match = True
                                     kw_match = True
                                     break
-                            if sim_w(kw, w, w2v_phrase_model) > 0.6:
-                                label_match = True
-                                kw_match = True
+                            # if sim_w(kw, w, w2v_phrase_model) > 0.6:
+                            #     label_match = True
+                            #     kw_match = True
                             if label_match:
                                 em_phrase_match_set.add("_".join(tws))
                                 break
@@ -751,7 +751,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                         label_match = False
                         for w in sent:
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.5:
+                                if sim_w(kw, w_s, wv_model) > 0.6:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
