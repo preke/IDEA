@@ -797,7 +797,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
     if add_attn:
         with open("../result/statistics_attn.txt", "a") as fout:
             fout.write('a +1b; Topic_num:%d\n'%topic_num)
-            fout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\n"%(logfile, np.mean(em_phrase_precisions), np.mean(label_phrase_recalls), label_phrase_fscore, np.mean(label_sent_recalls), np.mean(em_sent_precisions), label_sent_fscore))
+            fout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\n"%(logfile, np.mean(em_phrase_precisions), np.mean(label_phrase_recalls), label_phrase_fscore, np.mean(em_sent_precisions), np.mean(label_sent_recalls), label_sent_fscore))
     else:
         with open("../result/statistics_no_attn.txt", "a") as fout:
             # fout.write('Without attention!\n')
