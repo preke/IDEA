@@ -922,7 +922,7 @@ if __name__ == '__main__':
         w2v_model = Word2Vec.load(os.path.join("..", "model", "wv", "word2vec_app.model"))
         # phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_dict)
         phrase_attn_dict = phrases_attention(w2v_phrase_model, candidate_phrase_list, topic_dict)
-        topic_labeling(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 0.75, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
+        topic_labeling(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
         print("Totally takes %.2f seconds" % (time.time() - start_t))
 
 
