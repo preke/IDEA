@@ -607,7 +607,7 @@ def topic_detect(rawinput_sents, dic, phi, last_phi, count, last_count, total_co
     emerging_sent_scores = np.dot(phi_m, np.transpose(np.log(sent_count))) - np.sum(residuals_m, 1, keepdims=True) + lam * sensi_sent
 
     emerging_label_scores_rst[emerging_index] = emerging_label_scores
-    emerging_sent_scores_rst[emerging_index] = emerging_sent_scores
+    emerging_sent_scores_rst[emerging_index]  = emerging_sent_scores
 
     return emerging_label_scores_rst, emerging_sent_scores_rst
 
@@ -679,7 +679,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                 for w in label_phrases[id]:
                     label_match = False
                     for w_s in w.split("_"):
-                        if sim_w(kw, w_s, wv_model) > 0.5:
+                        if sim_w(kw, w_s, wv_model) > 0.6:
                             # hit
                             #logging.info("hit: %s -> %s"%(w, kw))
                             label_match = True
@@ -701,7 +701,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                     for w in sent:
                         label_match = False
                         for w_s in w.split("_"):
-                            if sim_w(kw, w_s, wv_model) > 0.5:
+                            if sim_w(kw, w_s, wv_model) > 0.6:
                                 # hit
                                 #logging.info("hit: %s -> %s"%(w, kw))
                                 label_match = True
@@ -727,7 +727,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                         for w in tws:
                             label_match = False
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.5:
+                                if sim_w(kw, w_s, wv_model) > 0.6:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
@@ -751,7 +751,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                         label_match = False
                         for w in sent:
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.5:
+                                if sim_w(kw, w_s, wv_model) > 0.6:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
