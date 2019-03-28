@@ -419,7 +419,7 @@ def topic_labeling(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, ap
                     for w_id in np.argsort(label_scores):
                         if add_attn == True:
                             # print 'attn'
-                            print '%f\t%f\n' %(float(label_scores[w_id]), float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]]))
+                            # print '%f\t%f\n' %(float(label_scores[w_id]), float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]]))
 
                             tuple_list.append( (dictionary[label_ids[t_i][w_id]], float(label_scores[w_id]) +  1* float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]]) ))
                             topic_label_scores[tp_i][w_id] = float(label_scores[w_id]) + 1* float(phrase_attn_dict[t_i][tp_i][dictionary[label_ids[t_i][w_id]]])
@@ -679,7 +679,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                 for w in label_phrases[id]:
                     label_match = False
                     for w_s in w.split("_"):
-                        if sim_w(kw, w_s, wv_model) > 0.6:
+                        if sim_w(kw, w_s, wv_model) > 0.5:
                             # hit
                             #logging.info("hit: %s -> %s"%(w, kw))
                             label_match = True
@@ -701,7 +701,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                     for w in sent:
                         label_match = False
                         for w_s in w.split("_"):
-                            if sim_w(kw, w_s, wv_model) > 0.6:
+                            if sim_w(kw, w_s, wv_model) > 0.5:
                                 # hit
                                 #logging.info("hit: %s -> %s"%(w, kw))
                                 label_match = True
@@ -727,7 +727,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                         for w in tws:
                             label_match = False
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.6:
+                                if sim_w(kw, w_s, wv_model) > 0.5:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
@@ -751,7 +751,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                         label_match = False
                         for w in sent:
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.6:
+                                if sim_w(kw, w_s, wv_model) > 0.5:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
@@ -765,9 +765,9 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
 
         # compute
         label_phrase_precision = len(label_phrase_match_set) / float(len(label_phrases[id]))
-        label_phrase_recall = len(label_phrase_issue_match_set) / float(len(m_ver))
-        label_sent_precision = len(label_sent_match_set) / float(len(label_sents[id]))
-        label_sent_recall = len(label_sent_issue_match_set) / float(len(m_ver))
+        label_phrase_recall    = len(label_phrase_issue_match_set) / float(len(m_ver))
+        label_sent_precision   = len(label_sent_match_set) / float(len(label_sents[id]))
+        label_sent_recall      = len(label_sent_issue_match_set) / float(len(m_ver))
         label_phrase_precisions.append(label_phrase_precision)
         label_phrase_recalls.append(label_phrase_recall)
         label_sent_precisions.append(label_sent_precision)
@@ -843,7 +843,7 @@ def phrases_attention(w2v_phrase_model, candidate_phrase_list, topic_dict):
                     tmp_list.append(1 - spatial.distance.cosine(embed1, embed2))
                     probs.append(float(str(word_prob[1])))
                 
-                print 'Total %d oov words.'%oov_num
+                # print 'Total %d oov words.'%oov_num
                 weights = softmax(np.array(tmp_list))
                 probs = np.array(probs)
                 attn_score = np.dot(weights, probs)
@@ -922,7 +922,7 @@ if __name__ == '__main__':
         w2v_model = Word2Vec.load(os.path.join("..", "model", "wv", "word2vec_app.model"))
         # phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_dict)
         phrase_attn_dict = phrases_attention(w2v_phrase_model, candidate_phrase_list, topic_dict)
-        topic_labeling(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
+        topic_labeling(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 0.75, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
         print("Totally takes %.2f seconds" % (time.time() - start_t))
 
 
