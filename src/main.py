@@ -904,7 +904,7 @@ if __name__ == '__main__':
         w2v_phrase_model = extract_phrases(app_files, bigram_min, trigram_min)
         with open("w2v_keys.txt", "a") as fout:
             for w in w2v_phrase_model.keys():
-            fout.write('%s\n' %w)
+                fout.write('%s\n' %w)
         
 
         # load_phrase()
