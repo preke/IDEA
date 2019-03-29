@@ -906,7 +906,10 @@ if __name__ == '__main__':
             for w in w2v_phrase_model.wv.vocab:
                 fout.write('%s\n' %w)
         
-
+        print w2v_phrase_model['hear']
+        print w2v_phrase_model['of']
+        print w2v_phrase_model['hear_of']
+        print w2v_phrase_model['fffff']
         # load_phrase()
         # timed_reviews = extract_review()
         # OLDA_input = build_AOLDA_input_version(timed_reviews)
