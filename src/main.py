@@ -903,7 +903,7 @@ if __name__ == '__main__':
     # for topic_num in range(9, 15):
         w2v_phrase_model = extract_phrases(app_files, bigram_min, trigram_min)
         with open("w2v_keys.txt", "a") as fout:
-            for w in w2v_phrase_model.wv.index2word():
+            for w in w2v_phrase_model.wv.vocab:
                 fout.write('%s\n' %w)
         
 
