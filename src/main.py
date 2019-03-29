@@ -734,7 +734,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                                     label_match = True
                                     kw_match = True
                                     break
-                            if sim_w(kw, w, w2v_phrase_model) > 0.6:
+                            if sim_w(kw, w, w2v_phrase_model) > 0.5:
                                 label_match = True
                                 kw_match = True
                             if label_match:
@@ -900,33 +900,38 @@ def build_sentence_w2v_model(OLDA_input):
     return rawinput_sent, w2v_sentences_model
 
 if __name__ == '__main__':
-    for topic_num in range(9, 15):
+    # for topic_num in range(9, 15):
         w2v_phrase_model = extract_phrases(app_files, bigram_min, trigram_min)
-        load_phrase()
-        timed_reviews = extract_review()
-        OLDA_input = build_AOLDA_input_version(timed_reviews)
+        with open("w2v_keys.txt", "a") as fout:
+            for w in w2v_phrase_model.keys():
+            fout.write('%s\n' %w)
         
 
-        phrases = generate_labeling_candidates(OLDA_input)
-        start_t = time.time()
-        apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
-        # print len(apk_phis)
-        # print apk_phis['radar'].shape
-        candidate_phrase_list = phrases['radar'].keys()
-        # candidate_phrase_list = phrases['youtube'].keys()
-        # candidate_phrase_list = phrases['clean_master'].keys()
-        # candidate_phrase_list = phrases['viber'].keys()
-        # candidate_phrase_list = phrases['swiftkey'].keys()
+        # load_phrase()
+        # timed_reviews = extract_review()
+        # OLDA_input = build_AOLDA_input_version(timed_reviews)
+        
 
-        '''
-        rawinput_sent, w2v_sentences_model = build_sentence_w2v_model(OLDA_input)
-        sentence_attn_dict = sentence_attn(w2v_sentences_model, rawinput_sent, topic_dict)
-        '''
-        w2v_model = Word2Vec.load(os.path.join("..", "model", "wv", "word2vec_app.model"))
-        # phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_dict)
-        phrase_attn_dict = phrases_attention(w2v_phrase_model, candidate_phrase_list, topic_dict)
-        topic_labeling(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
-        print("Totally takes %.2f seconds" % (time.time() - start_t))
+        # phrases = generate_labeling_candidates(OLDA_input)
+        # start_t = time.time()
+        # apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
+        # # print len(apk_phis)
+        # # print apk_phis['radar'].shape
+        # candidate_phrase_list = phrases['radar'].keys()
+        # # candidate_phrase_list = phrases['youtube'].keys()
+        # # candidate_phrase_list = phrases['clean_master'].keys()
+        # # candidate_phrase_list = phrases['viber'].keys()
+        # # candidate_phrase_list = phrases['swiftkey'].keys()
+
+        # '''
+        # rawinput_sent, w2v_sentences_model = build_sentence_w2v_model(OLDA_input)
+        # sentence_attn_dict = sentence_attn(w2v_sentences_model, rawinput_sent, topic_dict)
+        # '''
+        # w2v_model = Word2Vec.load(os.path.join("..", "model", "wv", "word2vec_app.model"))
+        # # phrase_attn_dict = phrases_attention(w2v_phrase_model, w2v_model, candidate_phrase_list, topic_dict)
+        # phrase_attn_dict = phrases_attention(w2v_phrase_model, candidate_phrase_list, topic_dict)
+        # topic_labeling(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
+        # print("Totally takes %.2f seconds" % (time.time() - start_t))
 
 
 
