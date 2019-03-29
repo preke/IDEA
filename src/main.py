@@ -692,7 +692,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                             kw_match = True
                             break
                     if sim_w(kw, w, w2v_phrase_model) > 0.5:
-                            ws_writer.write('%s,  %s,  %f\n', %(kw, w, sim_w(kw, w, w2v_phrase_model)))
+                            ws_writer.write('%s,  %s,  %f\n'%(kw, w, sim_w(kw, w, w2v_phrase_model)))
                             label_match = True
                             kw_match = True
                     if label_match: # if label match found, add label to match set
