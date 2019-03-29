@@ -899,7 +899,7 @@ def build_sentence_w2v_model(OLDA_input):
     return rawinput_sent, w2v_sentences_model
 
 if __name__ == '__main__':
-    for topic_num in range(9, 10):
+    for topic_num in range(9, 15):
         w2v_phrase_model = extract_phrases(app_files, bigram_min, trigram_min)
         load_phrase()
         timed_reviews = extract_review()
