@@ -675,7 +675,7 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
         # phrase
         for issue in m_ver:
             for kw in issue:
-                print kw
+                print 'KW in the changelog is:', kw
                 kw_match = False
                 for w in label_phrases[id]:
                     label_match = False
