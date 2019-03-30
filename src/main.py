@@ -928,8 +928,8 @@ if __name__ == '__main__':
         apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
         # print len(apk_phis)
         # print apk_phis['radar'].shape
-        candidate_phrase_list = phrases['radar'].keys()
-        # candidate_phrase_list = phrases['youtube'].keys()
+        # candidate_phrase_list = phrases['radar'].keys()
+        candidate_phrase_list = phrases['youtube'].keys()
         # candidate_phrase_list = phrases['clean_master'].keys()
         # candidate_phrase_list = phrases['viber'].keys()
         # candidate_phrase_list = phrases['swiftkey'].keys()
