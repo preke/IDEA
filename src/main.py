@@ -908,7 +908,7 @@ def build_sentence_w2v_model(OLDA_input):
     return rawinput_sent, w2v_sentences_model
 
 if __name__ == '__main__':
-    for topic_num in range(9, 10):
+    for topic_num in range(10, 15):
         w2v_phrase_model = extract_phrases(app_files, bigram_min, trigram_min)
         # with open("w2v_keys.txt", "a") as fout:
         #     for w in w2v_phrase_model.wv.vocab:
