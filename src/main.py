@@ -684,13 +684,13 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                 kw_match = False
                 for w in label_phrases[id]:
                     label_match = False
-                    for w_s in w.split("_"):
-                        if sim_w(kw, w_s, wv_model) > 0.5:
-                            # hit
-                            #logging.info("hit: %s -> %s"%(w, kw))
-                            label_match = True
-                            kw_match = True
-                            break
+                    # for w_s in w.split("_"):
+                    #     if sim_w(kw, w_s, wv_model) > 0.5:
+                    #         # hit
+                    #         #logging.info("hit: %s -> %s"%(w, kw))
+                    #         label_match = True
+                    #         kw_match = True
+                    #         break
                     if sim_w(kw, w, w2v_phrase_model) > 0.5:
                             ws_writer.write('%s,  %s,  %f\n'%(kw, w, sim_w(kw, w, w2v_phrase_model)))
                             label_match = True
@@ -733,13 +733,13 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                     for tws in emerge_phrases[id-1]:
                         for w in tws:
                             label_match = False
-                            for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.5:
-                                    # hit
-                                    #logging.info("hit: %s -> %s" % (w, kw))
-                                    label_match = True
-                                    kw_match = True
-                                    break
+                            # for w_s in w.split("_"):
+                            #     if sim_w(kw, w_s, wv_model) > 0.5:
+                            #         # hit
+                            #         #logging.info("hit: %s -> %s" % (w, kw))
+                            #         label_match = True
+                            #         kw_match = True
+                            #         break
                             if sim_w(kw, w, w2v_phrase_model) > 0.5:
                                 label_match = True
                                 kw_match = True
@@ -928,11 +928,11 @@ if __name__ == '__main__':
         apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
         # print len(apk_phis)
         # print apk_phis['radar'].shape
-        # candidate_phrase_list = phrases['radar'].keys()
+        candidate_phrase_list = phrases['radar'].keys()
         # candidate_phrase_list = phrases['youtube'].keys()
         # candidate_phrase_list = phrases['clean_master'].keys()
         # candidate_phrase_list = phrases['viber'].keys()
-        candidate_phrase_list = phrases['swiftkey'].keys()
+        # candidate_phrase_list = phrases['swiftkey'].keys()
 
         '''
         rawinput_sent, w2v_sentences_model = build_sentence_w2v_model(OLDA_input)
