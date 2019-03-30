@@ -929,10 +929,10 @@ if __name__ == '__main__':
         # print len(apk_phis)
         # print apk_phis['radar'].shape
         # candidate_phrase_list = phrases['radar'].keys()
-        candidate_phrase_list = phrases['youtube'].keys()
+        # candidate_phrase_list = phrases['youtube'].keys()
         # candidate_phrase_list = phrases['clean_master'].keys()
         # candidate_phrase_list = phrases['viber'].keys()
-        # candidate_phrase_list = phrases['swiftkey'].keys()
+        candidate_phrase_list = phrases['swiftkey'].keys()
 
         '''
         rawinput_sent, w2v_sentences_model = build_sentence_w2v_model(OLDA_input)
