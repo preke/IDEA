@@ -53,6 +53,8 @@ store_num = Config.get_store_num()
 val_index = Config.get_validate_or_not()
 word_embed = Config.get_wordembed_or_not()
 
+similarity_threshold = 0.5
+
 def extract_review():
     """
     Extract reviews with time and version stamp
@@ -829,7 +831,7 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
                 for w in label_phrases[id]:
                     label_match = False
                     for w_s in w.split("_"):
-                        if sim_w(kw, w_s, wv_model) > 0.6:
+                        if sim_w(kw, w_s, wv_model) > similarity_threshold:
                             # hit
                             #logging.info("hit: %s -> %s"%(w, kw))
                             label_match = True
@@ -848,7 +850,7 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
                     for w in sent:
                         label_match = False
                         for w_s in w.split("_"):
-                            if sim_w(kw, w_s, wv_model) > 0.6:
+                            if sim_w(kw, w_s, wv_model) > similarity_threshold:
                                 # hit
                                 #logging.info("hit: %s -> %s"%(w, kw))
                                 label_match = True
@@ -874,7 +876,7 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
                         for w in tws:
                             label_match = False
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.6:
+                                if sim_w(kw, w_s, wv_model) > similarity_threshold:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
@@ -895,7 +897,7 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
                         label_match = False
                         for w in sent:
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.6:
+                                if sim_w(kw, w_s, wv_model) > similarity_threshold:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
@@ -989,14 +991,14 @@ def validation_wv(w2v_phrase_model, topic_num, logfile, label_phrases, label_sen
                     label_match = False
                     '''
                     for w_s in w.split("_"):
-                        if sim_w(kw, w_s, wv_model) > 0.5:
+                        if sim_w(kw, w_s, wv_model) > similarity_threshold:
                             # hit
                             #logging.info("hit: %s -> %s"%(w, kw))
                             label_match = True
                             kw_match = True
                             break
                     '''
-                    if sim_w(kw, w, w2v_phrase_model) > 0.5:
+                    if sim_w(kw, w, w2v_phrase_model) > similarity_threshold:
                             ws_writer.write('%s,  %s,  %f\n'%(kw, w, sim_w(kw, w, w2v_phrase_model)))
                             label_match = True
                             kw_match = True
@@ -1013,7 +1015,7 @@ def validation_wv(w2v_phrase_model, topic_num, logfile, label_phrases, label_sen
                     for w in sent:
                         label_match = False
                         for w_s in w.split("_"):
-                            if sim_w(kw, w_s, wv_model) > 0.5:
+                            if sim_w(kw, w_s, wv_model) > similarity_threshold:
                                 # hit
                                 #logging.info("hit: %s -> %s"%(w, kw))
                                 label_match = True
@@ -1040,14 +1042,14 @@ def validation_wv(w2v_phrase_model, topic_num, logfile, label_phrases, label_sen
                             label_match = False
                             '''
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.5:
+                                if sim_w(kw, w_s, wv_model) > similarity_threshold:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
                                     kw_match = True
                                     break
                             '''
-                            if sim_w(kw, w, w2v_phrase_model) > 0.5:
+                            if sim_w(kw, w, w2v_phrase_model) > similarity_threshold:
                                 label_match = True
                                 kw_match = True
                             if label_match:
@@ -1065,7 +1067,7 @@ def validation_wv(w2v_phrase_model, topic_num, logfile, label_phrases, label_sen
                         label_match = False
                         for w in sent:
                             for w_s in w.split("_"):
-                                if sim_w(kw, w_s, wv_model) > 0.5:
+                                if sim_w(kw, w_s, wv_model) > similarity_threshold:
                                     # hit
                                     #logging.info("hit: %s -> %s" % (w, kw))
                                     label_match = True
@@ -1225,7 +1227,6 @@ if __name__ == '__main__':
     if word_embed:    
         app_name = str(validate_files.keys()[0])
         candidate_phrase_list = phrases[app_name].keys()
-        w2v_model = Word2Vec.load(os.path.join("..", "model", "wv", "word2vec_app.model"))
         phrase_attn_dict = phrases_attention(w2v_phrase_model, candidate_phrase_list, topic_dict)
         topic_labeling_with_wv(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
     else:
