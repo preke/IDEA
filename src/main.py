@@ -514,6 +514,7 @@ def topic_labeling(OLDA_input, apk_phis, phrases, mu, lam, theta, save=True):
 
 def topic_labeling_with_wv(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, add_attn=True):
     """
+    !! With word embeddings
     Topic labeling for phrase and sentence
     :param OLDA_input:
     :param apk_phis:
@@ -942,6 +943,10 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
 
 
 def validation_wv(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn):
+    '''
+    validation with word embeddings
+    '''
+
     # read changelog
     clog = []
     with open(logfile) as fin:
