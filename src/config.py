@@ -18,6 +18,7 @@ class Config(object):
     __SEC_PHRASES = "Phrases"
     __SEC_VALIDATE = "ValidateFiles"
     __SEC_VAL = "Validate"
+    __SEC_WORDEBD = "WordEmbed"
 
     @classmethod
     def get_section_list(cls):
@@ -102,7 +103,7 @@ class Config(object):
         '''
         : whether to use the word embeddings for topic labeling
         '''
-        return cls.__get_attr(int, cls.__SEC_VAL, "WordEmbed")
+        return cls.__get_attr(int, cls.__SEC_WORDEBD, "WordEmbed")
 
 
 

@@ -29,7 +29,7 @@ def build_input(app_files):
     return doc_sent_word
 
 ### write bigrams and trigrams to .model files
-def extract_phrases(app_files, bigram_min, trigram_min):
+def extract_phrases(app_files, bigram_min, trigram_min, word_embed):
     bigram_fp = os.path.join("..", "model", "bigram.model")
     trigram_fp = os.path.join("..", "model", "trigram.model")
 
@@ -38,11 +38,12 @@ def extract_phrases(app_files, bigram_min, trigram_min):
     
     bigram = Phrases(gen, threshold=5, min_count=bigram_min)
     trigram = Phrases(bigram[gen], threshold=3, min_count=trigram_min)
-
-    w2v_model = Word2Vec(trigram[bigram[gen]], min_count=1, size=200)
     # write
     bigram.save(bigram_fp)
     trigram.save(trigram_fp)
-    return w2v_model
-
+    if word_embed:
+        w2v_model = Word2Vec(trigram[bigram[gen]], min_count=1, size=200)
+        return w2v_model
+    else:
+        return 0
     

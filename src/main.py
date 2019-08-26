@@ -51,7 +51,7 @@ trigram_min = Config.get_trigram_min()
 info_num = Config.get_info_num()
 store_num = Config.get_store_num()
 val_index = Config.get_validate_or_not()
-
+word_embed = Config.get_wordembed_or_not()
 
 def extract_review():
     """
@@ -241,7 +241,7 @@ def generate_labeling_candidates(OLDA_input):
                     phrases[apk][phrase] = 1
     return phrases
 
-def OLDA_fit(OLDA_input, n_topics, win_size):
+def OLDA_fit(OLDA_input, n_topics, win_size, word_embed):
     phis = {}
     theta = {}
     topic_dict = {}
@@ -261,7 +261,10 @@ def OLDA_fit(OLDA_input, n_topics, win_size):
                 topic_dict[t_i][i] = topic_words
             fout.write('\n')
         fout.close()
-    return phis, topic_dict
+    if word_embed:
+        return phis, topic_dict
+    else:
+        return phis, 0
 
 def count_occurence(dic, rawinput, label_ids):
     count = []
@@ -365,7 +368,151 @@ def sim_topic_word(phi, label_id, count):
     c_l = np.array([np.log((count[label_id, w_id] + 1) / float((count[w_id] + 1) * (count[label_id] + 1))) for w_id in range(len(phi))])
     return np.dot(phi, c_l)
 
-def topic_labeling(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, add_attn=True):
+
+def topic_labeling(OLDA_input, apk_phis, phrases, mu, lam, theta, save=True):
+    """
+    Topic labeling for phrase and sentence
+    :param OLDA_input:
+    :param apk_phis:
+    :param phrases:
+    :param mu:
+    :param lam:
+    :param theta:
+    :param save:
+    :return:
+    """
+    logging.info("labeling topics(mu: %f, lam: %f, theta: %f)......" % (mu, lam, theta))
+    apk_jsds = {}
+    for apk, item in OLDA_input.items():
+        dictionary, _, rawinput, rates, tag = item
+        phis = apk_phis[apk]
+        labels = phrases[apk].keys()
+        # label_ids = map(dictionary.token2id.get, labels)
+        label_ids = get_candidate_label_ids(dictionary, labels, rawinput)
+        count = count_occurence(dictionary, rawinput, label_ids)
+        total_count = total_count_(dictionary, rawinput)
+        sensi_label = get_sensitivities(dictionary, rawinput, rates, label_ids)
+        rawinput_sent = list(itertools.chain.from_iterable(list(itertools.chain.from_iterable(rawinput))))
+        sent_ids, sent_rates = get_candidate_sentences_ids(rawinput, rates)
+        sensi_sent = get_sensitivities_sent(rawinput_sent, sent_rates, sent_ids)
+        jsds = []
+        label_phrases = []; label_sents = []; emerge_phrases = []; emerge_sents = []
+        if save:
+            result_path="../result/%s"%apk
+            if not os.path.exists(result_path):
+                os.makedirs(result_path)
+            fout_labels = open(os.path.join(result_path, "topic_labels"), 'w')
+            fout_emerging = open(os.path.join(result_path, "emerging_topic_labels"), 'w')
+            fout_sents = open(os.path.join(result_path, "topic_sents"), "w")
+            fout_emerging_sent = open(os.path.join(result_path, "emerging_topic_sents"), 'w')
+            fout_topic_width = open(os.path.join(result_path, "topic_width"), 'w')
+
+        for t_i, phi in enumerate(phis):
+            # label topic
+            logging.info("labeling topic at %s slice of %s" % (t_i, apk))
+            topic_label_scores = topic_labeling_(count[t_i], total_count[t_i], label_ids[t_i], sensi_label[t_i], phi, mu, lam)
+            topic_label_sent_score = topic_label_sent(dictionary, phi, rawinput_sent, sent_ids[t_i], sensi_sent[t_i], mu, lam)
+
+            # write to file: topic phrase
+            if save:
+                fout_labels.write("time slice %s, tag: %s\n"%(t_i, tag[t_i]))
+                for tp_i, label_scores in enumerate(topic_label_scores):
+                    fout_labels.write("Topic %d:"%tp_i)
+                    for w_id in np.argsort(label_scores)[:-candidate_num-1:-1]:
+                        fout_labels.write("%s\t%f\t" % (dictionary[label_ids[t_i][w_id]], label_scores[w_id]))
+                    fout_labels.write('\n')
+
+                fout_sents.write("time slice %s, tag: %s\n" % (t_i, tag[t_i]))
+                for tp_i, sent_scores in enumerate(topic_label_sent_score):
+                    fout_sents.write("Topic %d:"%tp_i)
+                    for s_id in np.argsort(sent_scores)[:-candidate_num-1:-1]:
+                        fout_sents.write("%s\t%f\t"%(" ".join(rawinput_sent[sent_ids[t_i][s_id]]), sent_scores[s_id]))
+                    fout_sents.write('\n')
+
+            # store for verification
+            label_phrases_ver = []; label_sents_ver = []
+            for tp_i, label_scores in enumerate(topic_label_scores):
+                label_phrases_ver.append(
+                    [dictionary[label_ids[t_i][w_id]] for w_id in np.argsort(label_scores)[:-candidate_num-1:-1]])
+            label_phrases.append(list(itertools.chain.from_iterable(label_phrases_ver)))
+            for tp_i, sent_scores in enumerate(topic_label_sent_score):
+                label_sents_ver.append(
+                    [rawinput_sent[sent_ids[t_i][s_id]] for s_id in np.argsort(sent_scores)[:-candidate_num-1:-1]])
+            label_sents.append(list(itertools.chain.from_iterable(label_sents_ver)))
+
+            # detect emerging topic
+            logging.info("detecting topic at %s slice of %s" % (t_i, apk))
+            if save and t_i == 0:
+                topic_width = count_width(dictionary, label_phrases_ver, count[t_i], sensi_label[t_i], label_ids[t_i])
+                for theta in topic_width:
+                    fout_topic_width.write("%f\t" % theta)
+                fout_topic_width.write("\n")
+                continue   # skip the first epoch
+            emerging_label_scores, emerging_sent_scores = topic_detect(rawinput_sent, dictionary, phi, phis[t_i-1], count[t_i], count[t_i-1], total_count[t_i],
+                                                 total_count[t_i-1], label_ids[t_i], sent_ids[t_i], sensi_label[t_i], sensi_sent[t_i], jsds, theta, mu, lam)
+            # write to file
+            if save:
+                fout_emerging.write("time slice %s, tag: %s\n"%(t_i, tag[t_i]))
+                for tp_i, label_scores in enumerate(emerging_label_scores):
+                    fout_emerging.write("Topic %d: "%tp_i)
+                    if np.sum(label_scores) == 0:
+                        fout_emerging.write('None\n')
+                    else:
+                        for w_id in np.argsort(label_scores)[:-4:-1]:
+                            fout_emerging.write("%s\t%f\t" % (dictionary[label_ids[t_i][w_id]], label_scores[w_id]))
+                        fout_emerging.write('\n')
+                fout_emerging_sent.write("time slice %s, tag: %s\n"%(t_i, tag[t_i]))
+                for tp_i, sent_scores in enumerate(emerging_sent_scores):
+                    fout_emerging_sent.write("Topic %d: "%tp_i)
+                    if np.sum(sent_scores) == 0:
+                        fout_emerging_sent.write('None\n')
+                    else:
+                        for s_id in np.argsort(sent_scores)[:-4:-1]:
+                            fout_emerging_sent.write("%s\t%f\t" % (" ".join(rawinput_sent[sent_ids[t_i][s_id]]), sent_scores[s_id]))
+                        fout_emerging_sent.write('\n')
+            # store for verification
+            emerge_phrases_ver = []; emerge_sents_ver = []
+            emerge_phrases_width_ver = []
+            for tp_i, label_scores in enumerate(emerging_label_scores):
+                if np.sum(label_scores) == 0:
+                    emerge_phrases_width_ver.append([])
+                    continue
+                emerge_phrases_ver.append(
+                    [dictionary[label_ids[t_i][w_id]] for w_id in np.argsort(label_scores)[:-4:-1]])
+                emerge_phrases_width_ver.append(
+                    [dictionary[label_ids[t_i][w_id]] for w_id in np.argsort(label_scores)[:-4:-1]])
+            emerge_phrases.append(emerge_phrases_ver)
+            # merge emerge to label
+            label_emerge_ver = [set(l)|set(e) for l, e in zip(label_phrases_ver, emerge_phrases_width_ver)]
+            topic_width = count_width(dictionary, label_emerge_ver, count[t_i], sensi_label[t_i], label_ids[t_i])
+            for tp_i, sent_scores in enumerate(emerging_sent_scores):
+                if np.sum(sent_scores) == 0:
+                    continue
+                emerge_sents_ver.append(
+                    [rawinput_sent[sent_ids[t_i][s_id]] for s_id in np.argsort(sent_scores)[:-4:-1]])
+            emerge_sents.append(emerge_sents_ver)
+            # write topic width
+            if save:
+                for theta in topic_width:
+                    fout_topic_width.write("%f\t" % theta)
+                fout_topic_width.write("\n")
+
+        ############################################
+        if val_index:
+            validation(validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents)
+        ############################################
+
+        if save:
+            fout_labels.close()
+            fout_sents.close()
+            fout_emerging.close()
+            fout_emerging_sent.close()
+            fout_topic_width.close()
+        apk_jsds[apk] = jsds
+    return apk_jsds
+
+
+def topic_labeling_with_wv(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, add_attn=True):
     """
     Topic labeling for phrase and sentence
     :param OLDA_input:
@@ -516,7 +663,7 @@ def topic_labeling(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, ap
 
         ############################################
         if val_index:
-            validation(w2v_phrase_model, topic_num, validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn)
+            validation_wv(w2v_phrase_model, topic_num, validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn)
         ############################################
 
         if save:
@@ -644,7 +791,157 @@ def count_width(dictionary, label_phrases_ver, counts, sensi_labels, label_ids):
         count_width_rst.append(t_count)
     return np.array(count_width_rst)
 
-def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn):
+
+def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents):
+    # read changelog
+    clog = []
+    with open(logfile) as fin:
+        for line in fin.readlines():
+            line = line.strip()
+            issue_kw = map(lambda s: s.strip().split(), line.split(","))
+            clog.append(issue_kw)
+    # check alignment
+    if len(clog) != len(label_phrases):
+        logging.error("length not corrected: %d, %d"%(len(clog), len(label_phrases)))
+        exit(0)
+    # compare topic label using keyword
+    # load word2vec model
+    wv_model = Word2Vec.load(os.path.join("..", "model", "wv", "word2vec_app.model"))
+    label_phrase_precisions = []; label_phrase_recalls = []; label_sent_precisions = []; label_sent_recalls = []
+    em_phrase_precisions = []; em_phrase_recalls = []; em_sent_precisions = []; em_sent_recalls = []
+    # two list: [['keyword1', 'keyword2', ...], ['keyword1', 'keyword2', ...]]
+    #           [['label1', 'label2', ...], ['label1', 'label2', ...]]
+    for id, ver in enumerate(clog):
+        if ver == [[]]: # skip the empty version changelog
+            continue
+        label_phrase_match_set = set(); label_phrase_issue_match_set = set(); label_sent_match_set = set(); label_sent_issue_match_set = set()
+        em_phrase_match_set = set(); em_phrase_issue_match_set = set(); em_sent_match_set = set(); em_sent_issue_match_set = set()
+
+        if id != len(clog) - 1 and clog[id+1] != [[]]:         # merge changelog with next version
+            m_ver = ver + clog[id+1]
+        else:
+            m_ver = ver
+        # phrase
+        for issue in m_ver:
+            for kw in issue:
+                kw_match = False
+                for w in label_phrases[id]:
+                    label_match = False
+                    for w_s in w.split("_"):
+                        if sim_w(kw, w_s, wv_model) > 0.6:
+                            # hit
+                            #logging.info("hit: %s -> %s"%(w, kw))
+                            label_match = True
+                            kw_match = True
+                            break
+                    if label_match: # if label match found, add label to match set
+                        label_phrase_match_set.add(w)
+                if kw_match:    # if kw match found, add issue to match set
+                    label_phrase_issue_match_set.add("_".join(issue))
+
+        # sentence
+        for issue in m_ver:
+            for kw in issue:
+                kw_match = False
+                for sent in label_sents[id]:
+                    for w in sent:
+                        label_match = False
+                        for w_s in w.split("_"):
+                            if sim_w(kw, w_s, wv_model) > 0.6:
+                                # hit
+                                #logging.info("hit: %s -> %s"%(w, kw))
+                                label_match = True
+                                kw_match = True
+                                break
+                        if label_match:
+                            label_sent_match_set.add("_".join(sent))   # if label match found, skip to next sentence
+                            break
+                if kw_match:
+                    label_sent_issue_match_set.add("_".join(issue))
+
+        # check emerging issue label
+        # merge current version and next version
+        # if id != len(clog) - 1:
+        #     m_ver = ver + clog[id+1]
+        # else:
+        #     m_ver = ver
+        if id != 0:     # skip the first epoch
+            for issue in m_ver:
+                for kw in issue:
+                    kw_match = False
+                    for tws in emerge_phrases[id-1]:
+                        for w in tws:
+                            label_match = False
+                            for w_s in w.split("_"):
+                                if sim_w(kw, w_s, wv_model) > 0.6:
+                                    # hit
+                                    #logging.info("hit: %s -> %s" % (w, kw))
+                                    label_match = True
+                                    kw_match = True
+                                    break
+                            if label_match:
+                                em_phrase_match_set.add("_".join(tws))
+                                break
+                    if kw_match:
+                        em_phrase_issue_match_set.add("_".join(issue))
+
+            # sentence
+            for issue in m_ver:
+                for kw in issue:
+                    kw_match = False
+                    for tsents in emerge_sents[id-1]:
+                        sent = list(itertools.chain.from_iterable(tsents))
+                        label_match = False
+                        for w in sent:
+                            for w_s in w.split("_"):
+                                if sim_w(kw, w_s, wv_model) > 0.6:
+                                    # hit
+                                    #logging.info("hit: %s -> %s" % (w, kw))
+                                    label_match = True
+                                    kw_match = True
+                                    break
+                            if label_match:
+                                em_sent_match_set.add("_".join(sent))  # if label match found, skip to next sentence
+                                break
+                    if kw_match:
+                        em_sent_issue_match_set.add("_".join(issue))
+
+        # compute
+        label_phrase_precision = len(label_phrase_match_set) / float(len(label_phrases[id]))
+        label_phrase_recall = len(label_phrase_issue_match_set) / float(len(m_ver))
+        label_sent_precision = len(label_sent_match_set) / float(len(label_sents[id]))
+        label_sent_recall = len(label_sent_issue_match_set) / float(len(m_ver))
+        label_phrase_precisions.append(label_phrase_precision)
+        label_phrase_recalls.append(label_phrase_recall)
+        label_sent_precisions.append(label_sent_precision)
+        label_sent_recalls.append(label_sent_recall)
+
+        if id != 0:
+            if len(emerge_phrases[id-1]) != 0:
+                em_phrase_precision = len(em_phrase_match_set) / float(len(emerge_phrases[id-1]))
+                em_phrase_precisions.append(em_phrase_precision)
+            em_phrase_recall = len(em_phrase_issue_match_set) / float(len(ver))
+            if len(emerge_sents[id-1]) != 0:
+                em_sent_precision = len(em_sent_match_set) / float(len(emerge_sents[id-1]))
+                em_sent_precisions.append(em_sent_precision)
+            em_sent_recall = len(em_sent_issue_match_set) / float(len(ver))
+            em_phrase_recalls.append(em_phrase_recall)
+            em_sent_recalls.append(em_sent_recall)
+    label_phrase_fscore = 2 * np.mean(label_phrase_recalls) * np.mean(em_phrase_precisions) / (np.mean(label_phrase_recalls) + np.mean(em_phrase_precisions))
+    label_sent_fscore = 2 * np.mean(label_sent_recalls) * np.mean(em_sent_precisions) / (np.mean(label_sent_recalls) + np.mean(em_sent_precisions))
+    logging.info("Phrase label precision: %s\trecall: %f"%(np.mean(label_phrase_precisions), np.mean(label_phrase_recalls)))
+    logging.info("Sentence label precision: %s\trecall: %f" % (np.mean(label_sent_precisions), np.mean(label_sent_recalls)))
+    logging.info(
+        "Emerging phrase precision: %s\trecall: %f" % (np.mean(em_phrase_precisions), np.mean(em_phrase_recalls)))
+    logging.info(
+        "Emerging sentence precision: %s\trecall: %f" % (np.mean(em_sent_precisions), np.mean(em_sent_recalls)))
+    logging.info("Phrase F1 score: %f"%label_phrase_fscore)
+    logging.info("Sentence F1 score: %f" % label_sent_fscore)
+    with open("../result/statistics.txt", "a") as fout:
+        fout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\n"%(logfile, np.mean(label_phrase_recalls), np.mean(label_sent_recalls), np.mean(em_phrase_precisions), np.mean(em_sent_precisions), label_phrase_fscore, label_sent_fscore))
+
+
+def validation_wv(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn):
     # read changelog
     clog = []
     with open(logfile) as fin:
@@ -685,13 +982,15 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                 kw_match = False
                 for w in label_phrases[id]:
                     label_match = False
-                    # for w_s in w.split("_"):
-                    #     if sim_w(kw, w_s, wv_model) > 0.5:
-                    #         # hit
-                    #         #logging.info("hit: %s -> %s"%(w, kw))
-                    #         label_match = True
-                    #         kw_match = True
-                    #         break
+                    '''
+                    for w_s in w.split("_"):
+                        if sim_w(kw, w_s, wv_model) > 0.5:
+                            # hit
+                            #logging.info("hit: %s -> %s"%(w, kw))
+                            label_match = True
+                            kw_match = True
+                            break
+                    '''
                     if sim_w(kw, w, w2v_phrase_model) > 0.5:
                             ws_writer.write('%s,  %s,  %f\n'%(kw, w, sim_w(kw, w, w2v_phrase_model)))
                             label_match = True
@@ -734,13 +1033,15 @@ def validation(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents,
                     for tws in emerge_phrases[id-1]:
                         for w in tws:
                             label_match = False
-                            # for w_s in w.split("_"):
-                            #     if sim_w(kw, w_s, wv_model) > 0.5:
-                            #         # hit
-                            #         #logging.info("hit: %s -> %s" % (w, kw))
-                            #         label_match = True
-                            #         kw_match = True
-                            #         break
+                            '''
+                            for w_s in w.split("_"):
+                                if sim_w(kw, w_s, wv_model) > 0.5:
+                                    # hit
+                                    #logging.info("hit: %s -> %s" % (w, kw))
+                                    label_match = True
+                                    kw_match = True
+                                    break
+                            '''
                             if sim_w(kw, w, w2v_phrase_model) > 0.5:
                                 label_match = True
                                 kw_match = True
@@ -909,26 +1210,22 @@ def build_sentence_w2v_model(OLDA_input):
     return rawinput_sent, w2v_sentences_model
 
 if __name__ == '__main__':
-    print validate_files
-    time.sleep(100)
-    w2v_phrase_model = extract_phrases(app_files, bigram_min, trigram_min)
+    w2v_phrase_model = extract_phrases(app_files, bigram_min, trigram_min, word_embed)
     load_phrase()
     timed_reviews = extract_review()
     OLDA_input = build_AOLDA_input_version(timed_reviews)
-    
-
     phrases = generate_labeling_candidates(OLDA_input)
     start_t = time.time()
-    apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size)
-    candidate_phrase_list = phrases['radar'].keys()
-    # candidate_phrase_list = phrases['youtube'].keys()
-    # candidate_phrase_list = phrases['clean_master'].keys()
-    # candidate_phrase_list = phrases['viber'].keys()
-    # candidate_phrase_list = phrases['swiftkey'].keys()
+    apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size, word_embed)
+    if word_embed:    
+        app_name = str(validate_files.keys()[0])
+        candidate_phrase_list = phrases[app_name].keys()
+        w2v_model = Word2Vec.load(os.path.join("..", "model", "wv", "word2vec_app.model"))
+        phrase_attn_dict = phrases_attention(w2v_phrase_model, candidate_phrase_list, topic_dict)
+        topic_labeling_with_wv(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
+    else:
+        topic_labeling(OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)# mu, lam, theta
 
-    w2v_model = Word2Vec.load(os.path.join("..", "model", "wv", "word2vec_app.model"))
-    phrase_attn_dict = phrases_attention(w2v_phrase_model, candidate_phrase_list, topic_dict)
-    topic_labeling(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
     print("Totally takes %.2f seconds" % (time.time() - start_t))
 
 
