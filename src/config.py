@@ -96,3 +96,14 @@ class Config(object):
     @classmethod
     def get_validate_or_not(cls):
         return cls.__get_attr(int, cls.__SEC_VAL, "Validate")
+
+    @classmethod
+    def get_wordembed_or_not(cls):
+        '''
+        : whether to use the word embeddings for topic labeling
+        '''
+        return cls.__get_attr(int, cls.__SEC_VAL, "WordEmbed")
+
+
+
+
