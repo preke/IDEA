@@ -514,7 +514,7 @@ def topic_labeling(OLDA_input, apk_phis, phrases, mu, lam, theta, save=True):
     return apk_jsds
 
 
-def topic_labeling_with_wv(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, add_attn=True):
+def topic_labeling_with_wv(wv_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, mu, lam, theta, save=True, add_attn=True):
     """
     !! With word embeddings
     Topic labeling for phrase and sentence
@@ -666,7 +666,7 @@ def topic_labeling_with_wv(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_i
 
         ############################################
         if val_index:
-            validation_wv(w2v_phrase_model, topic_num, validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn)
+            validation_wv(wv_model, topic_num, validate_files[apk], label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn)
         ############################################
 
         if save:
@@ -944,7 +944,7 @@ def validation(logfile, label_phrases, label_sents, emerge_phrases, emerge_sents
         fout.write("%s\t%f\t%f\t%f\t%f\t%f\t%f\n"%(logfile, np.mean(label_phrase_recalls), np.mean(label_sent_recalls), np.mean(em_phrase_precisions), np.mean(em_sent_precisions), label_phrase_fscore, label_sent_fscore))
 
 
-def validation_wv(w2v_phrase_model, topic_num, logfile, label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn):
+def validation_wv(wv_model, topic_num, logfile, label_phrases, label_sents, emerge_phrases, emerge_sents, add_attn):
     '''
     validation with word embeddings
     '''
@@ -998,8 +998,8 @@ def validation_wv(w2v_phrase_model, topic_num, logfile, label_phrases, label_sen
                             kw_match = True
                             break
                     '''
-                    if sim_w(kw, w, w2v_phrase_model) > similarity_threshold:
-                            ws_writer.write('%s,  %s,  %f\n'%(kw, w, sim_w(kw, w, w2v_phrase_model)))
+                    if sim_w(kw, w, wv_model) > similarity_threshold:
+                            ws_writer.write('%s,  %s,  %f\n'%(kw, w, sim_w(kw, w, wv_model)))
                             label_match = True
                             kw_match = True
                     if label_match: # if label match found, add label to match set
@@ -1049,7 +1049,7 @@ def validation_wv(w2v_phrase_model, topic_num, logfile, label_phrases, label_sen
                                     kw_match = True
                                     break
                             '''
-                            if sim_w(kw, w, w2v_phrase_model) > similarity_threshold:
+                            if sim_w(kw, w, wv_model) > similarity_threshold:
                                 label_match = True
                                 kw_match = True
                             if label_match:
@@ -1138,7 +1138,7 @@ def softmax(x):
     return np.exp(x)/np.sum(np.exp(x),axis=0)
 
 
-def phrases_attention(w2v_phrase_model, candidate_phrase_list, topic_dict):
+def phrases_attention(wv_model, candidate_phrase_list, topic_dict):
     phrase_attn_dict = {}
     tmp_topic_dict_1_slide = {}
     for t_slide, topic_dict_1_slide in topic_dict.iteritems():        
@@ -1147,13 +1147,13 @@ def phrases_attention(w2v_phrase_model, candidate_phrase_list, topic_dict):
         for topic, topic_words in topic_dict_1_slide.iteritems():
             phrase_score = {}
             for phrase in candidate_phrase_list:
-                embed1 = w2v_phrase_model[phrase]
+                embed1 = wv_model[phrase]
                 tmp_list = []
                 probs = []
                 oov_num = 0
                 for word_prob in topic_words:
                     try:
-                        embed2 = w2v_phrase_model[word_prob[0]]
+                        embed2 = wv_model[word_prob[0]]
                     except: #oov
                         embed2 = oov_embed
                         oov_num += 1
@@ -1217,18 +1217,19 @@ def build_sentence_w2v_model(OLDA_input):
     return rawinput_sent, w2v_sentences_model
 
 if __name__ == '__main__':
-    w2v_phrase_model = extract_phrases(app_files, bigram_min, trigram_min, word_embed)
+    extract_phrases(app_files, bigram_min, trigram_min)
     load_phrase()
     timed_reviews = extract_review()
     OLDA_input = build_AOLDA_input_version(timed_reviews)
     phrases = generate_labeling_candidates(OLDA_input)
     start_t = time.time()
     apk_phis, topic_dict = OLDA_fit(OLDA_input, topic_num, win_size, word_embed)
+    wv_model = Word2Vec.load(os.path.join("..", "model", "wv", "word2vec_app.model"))
     if word_embed:    
         app_name = str(validate_files.keys()[0])
         candidate_phrase_list = phrases[app_name].keys()
-        phrase_attn_dict = phrases_attention(w2v_phrase_model, candidate_phrase_list, topic_dict)
-        topic_labeling_with_wv(w2v_phrase_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
+        phrase_attn_dict = phrases_attention(wv_model, candidate_phrase_list, topic_dict)
+        topic_labeling_with_wv(wv_model, topic_num, phrase_attn_dict, OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True, add_attn=True)# mu, lam, theta
     else:
         topic_labeling(OLDA_input, apk_phis, phrases, 1.0, 0.75, 0.0, save=True)# mu, lam, theta
 
